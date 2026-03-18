@@ -6,6 +6,7 @@ const USERS = [
   { id: 3, name: 'Prasit Mana',  email: 'prasit@maintenance.com',  password: '1234', role: 'manager', section: 'mechatronic' },
   { id: 4, name: 'วิชัย สุขสันต์',    email: 'wichai@maintenance.com',   password: '1234', role: 'technician', section: 'mechanic' },
   { id: 5, name: 'กมล รุ่งเรือง',   email: 'kamon@maintenance.com',   password: '1234', role: 'viewer',     section: null },
+  { id: 6, name: 'ตุ้งติ้ง',   email: 'tungting@maintenance.com',   password: '1234', role: 'Hydraulic',     section: null },
 ]
 
 const AuthContext = createContext(null)

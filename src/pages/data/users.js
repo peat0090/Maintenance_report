@@ -45,4 +45,14 @@ export const USERS = [
     section: null,
     avatar: 'ก',
   },
+  {
+    id: 6,
+    name: 'ตุ้งติ้ง',
+    email: 'tungting@maintenance.com',
+    password: '1234',
+    role: 'technician',
+    section: 'hydraulic',
+    avatar: 'น',
+  },
+
 ]
