@@ -183,7 +183,7 @@ export default function TaskDetailPage() {
 
   const photoTypeBadge = (type) => type === 'before' ? 'bg-orange-500' : type === 'after' ? 'bg-green-500' : 'bg-blue-500'
   const photoTypeLabel = (type) => type === 'before' ? 'ก่อน' : type === 'after' ? 'หลัง' : 'ระหว่าง'
-  const formatDate = (d) => d ? new Date(d).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'
+  const formatDate = (d) => d ? new Date(d).toLocaleString('th-TH', { day: 'numeric', month: 'short', year: 'numeric',hour: '2-digit', minute: '2-digit',timeZone: 'Asia/Bangkok'}):'-'
 
   if (loading) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">

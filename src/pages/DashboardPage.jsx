@@ -25,9 +25,10 @@ const roleColor = {
 
 const formatDate = (dateStr) => {
   if (!dateStr) return '-'
-  return new Date(dateStr).toLocaleDateString('th-TH', {
-    day: 'numeric',
-    month: 'short',
+  return new Date(dateStr).toLocaleString('th-TH', {
+    day: 'numeric', month: 'short',
+    hour: '2-digit', minute: '2-digit',
+    timeZone: 'Asia/Bangkok'
   })
 }
 
