@@ -1,47 +1,52 @@
 import { createContext, useContext, useState } from 'react'
+import { supabase } from '../lib/supabaseClient'
 
-const USERS = [
-  { id: 1, name: 'Mr.Puttiphong Buala',     email: 'puttipong.peat@gmail.com', password: '1234', role: 'admin',      section: null },
-  { id: 2, name: 'Pitchayanan Thanawatsanti',  email: 'Pitchayanan@mechatronics.com',  password: '1234', role: 'planner',    section: 'mechatronic' },
-  { id: 3, name: 'Prasit Mana',  email: 'prasit@maintenance.com',  password: '1234', role: 'manager', section: 'mechatronic' },
-  { id: 4, name: 'วิชัย สุขสันต์',    email: 'wichai@maintenance.com',   password: '1234', role: 'technician', section: 'mechanic' },
-  { id: 5, name: 'กมล รุ่งเรือง',   email: 'kamon@maintenance.com',   password: '1234', role: 'viewer',     section: null },
-  { id: 6, name: 'ตุ้งติ้ง',   email: 'tungting@maintenance.com',   password: '1234', role: 'Hydraulic',     section: null },
-]
+const PERMISSIONS = {
+  admin:      ['create', 'edit', 'delete', 'view', 'manage_users'],
+  manager:    ['create', 'edit', 'view'],
+  planner:    ['create', 'edit', 'view'],
+  technician: ['create', 'view'],
+  viewer:     ['view'],
+}
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('currentUser')
-    return saved ? JSON.parse(saved) : null
+    try {
+      const saved = localStorage.getItem('auth_user')
+      return saved ? JSON.parse(saved) : null
+    } catch {
+      return null
+    }
   })
 
-  const login = (email, password) => {
-    const found = USERS.find(u => u.email === email && u.password === password)
-    if (found) {
-      const { password: _pw, ...safeUser } = found
-      setUser(safeUser)
-      localStorage.setItem('currentUser', JSON.stringify(safeUser))
-      return { success: true, user: safeUser }
-    }
-    return { success: false, message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' }
+  const login = async (email, password) => {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .ilike('email', email.trim())
+      .single()
+
+    if (error || !data) return { success: false, message: 'ไม่พบบัญชีนี้ในระบบ' }
+    if (data.password !== password) return { success: false, message: 'รหัสผ่านไม่ถูกต้อง' }
+
+    const { password: _pw, ...safeUser } = data
+    safeUser.role = safeUser.role?.toLowerCase()
+
+    localStorage.setItem('auth_user', JSON.stringify(safeUser))
+    setUser(safeUser)
+    return { success: true }
   }
 
   const logout = () => {
+    localStorage.removeItem('auth_user')
     setUser(null)
-    localStorage.removeItem('currentUser')
   }
 
   const can = (action) => {
-    const permissions = {
-      admin:      ['create', 'edit', 'delete', 'manage_users', 'view_all'],
-      manager:    ['create', 'edit', 'delete', 'view_all'],
-      planner:    ['create', 'edit', 'delete','view_all'],
-      technician: [ 'edit'],
-      viewer:     [],
-    }
-    return permissions[user?.role]?.includes(action) ?? false
+    if (!user) return false
+    return PERMISSIONS[user.role]?.includes(action) ?? false
   }
 
   return (
@@ -52,4 +57,6 @@ export function AuthProvider({ children }) {
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const useAuth = () => useContext(AuthContext)
+export function useAuth() {
+  return useContext(AuthContext)
+}

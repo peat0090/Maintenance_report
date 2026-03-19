@@ -4,9 +4,9 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabaseClient'
 
 const sectionColor = {
-  hydraulic:   { bg: 'bg-blue-100',   text: 'text-blue-700',   label: 'Hydraulic' },
-  mechatronic: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Mechatronic' },
-  mechanic:    { bg: 'bg-amber-100',  text: 'text-amber-700',  label: 'Mechanic' },
+  Hydraulic:   { bg: 'bg-blue-100',   text: 'text-blue-700',   label: 'Hydraulic' },
+  Mechatronic: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Mechatronic' },
+  Mechanic:    { bg: 'bg-amber-100',  text: 'text-amber-700',  label: 'Mechanic' },
 }
 
 const priorityColor = {
@@ -119,12 +119,13 @@ export default function DashboardPage() {
               + เพิ่มงาน
             </Link>
           )}
+          
           <div className="flex items-center gap-2">
             <div className={`w-8 h-8 ${roleColor[user.role]} rounded-full flex items-center justify-center text-white text-sm font-bold`}>
-              {user.name.charAt(0)}
+              {user.fullname?.charAt(0)}
             </div>
             <div className="hidden md:block">
-              <p className="text-sm font-medium text-slate-700">{user.name}</p>
+              <p className="text-sm font-medium text-slate-700">{user.fullname}</p>
               <p className="text-xs text-slate-400 capitalize">{user.role}</p>
             </div>
           </div>
@@ -155,10 +156,9 @@ export default function DashboardPage() {
         {/* Filter */}
         <div className="flex gap-2 mb-5 flex-wrap">
           {[
-            { key: 'all',         label: 'ทุกแผนก' },
-            { key: 'hydraulic',   label: '💧 Hydraulic' },
-            { key: 'mechatronic', label: '⚡ Mechatronic' },
-            { key: 'mechanic',    label: '⚙️ Mechanic' },
+        { key: 'Hydraulic',   label: '💧 Hydraulic' },
+        { key: 'Mechatronic', label: '⚡ Mechatronic' },
+        { key: 'Mechanic',    label: '⚙️ Mechanic' },
           ].map(f => (
             <button
               key={f.key}

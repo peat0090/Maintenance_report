@@ -3,5 +3,6 @@ import { createClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL  = 'https://eqgtyveijshkljffnrvf.supabase.co'
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxZ3R5dmVpanNoa2xqZmZucnZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MDUyMDMsImV4cCI6MjA4OTM4MTIwM30.WNRr_wwJTcSOo_tR8JFHeHcI5tzGgD1vROvaqPFajao'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxZ3R5dmVpanNoa2xqZmZucnZmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzgwNTIwMywiZXhwIjoyMDg5MzgxMjAzfQ.0koKoVW-l7wrBfcgbI8a39fOXPh82m60ybcYZCZ2Cmw'
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON)
+export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)

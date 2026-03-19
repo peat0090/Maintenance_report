@@ -3,12 +3,6 @@ import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabaseClient'
 
-const members = {
-  hydraulic:   ['ประสิทธิ์ มานะ', 'สมศักดิ์ แก้วใส', 'รัตนา พรมดี'],
-  mechatronic: ['วิชัย สุขสันต์', 'กมล รุ่งเรือง', 'นภา ท้าวมา'],
-  mechanic:    ['อนันต์ ดีงาม', 'ธนา ศรีสุข', 'พิมพ์ ใจงาม'],
-}
-
 const priorityOptions = [
   { value: 'low',      label: 'ต่ำ',        bg: 'bg-slate-100',  active: 'bg-slate-500 text-white',  text: 'text-slate-600' },
   { value: 'medium',   label: 'ปานกลาง',    bg: 'bg-blue-50',    active: 'bg-blue-500 text-white',   text: 'text-blue-600' },
@@ -17,51 +11,85 @@ const priorityOptions = [
 ]
 
 const statusOptions = [
-  { value: 'pending',     label: '📋 รอดำเนินการ', bg: 'bg-slate-100',  active: 'bg-slate-500 text-white',  text: 'text-slate-600' },
-  { value: 'in_progress', label: '⏳ กำลังทำ',     bg: 'bg-amber-50',   active: 'bg-amber-500 text-white',  text: 'text-amber-600' },
-  { value: 'done',        label: '✅ เสร็จแล้ว',   bg: 'bg-green-50',   active: 'bg-green-500 text-white',  text: 'text-green-600' },
+  { value: 'pending',     label: '📋 รอดำเนินการ', bg: 'bg-slate-100',  active: 'bg-slate-500 text-white', text: 'text-slate-600' },
+  { value: 'in_progress', label: '⏳ กำลังทำ',     bg: 'bg-amber-50',   active: 'bg-amber-500 text-white', text: 'text-amber-600' },
+  { value: 'done',        label: '✅ เสร็จแล้ว',   bg: 'bg-green-50',   active: 'bg-green-500 text-white', text: 'text-green-600' },
 ]
+
+const canEditTask = (user, task) => {
+  if (!user || !task) return false
+  const role        = user.role?.toLowerCase()
+  const userSection = user.section?.toLowerCase()
+  const taskSection = task.section?.toLowerCase()
+  if (role === 'admin')      return true
+  if (role === 'viewer')     return false
+  if (role === 'planner') return userSection === taskSection
+  if (userSection !== taskSection) return false
+  if (role === 'manager')    return true
+  if (role === 'technician') return user.fullname === task.assigned_to || user.id === task.created_by
+  return false
+}
+
+const getEditBlockReason = (user, task) => {
+  if (!user || !task) return 'ไม่พบข้อมูล'
+  const role        = user.role?.toLowerCase()
+  const userSection = user.section?.toLowerCase()
+  const taskSection = task.section?.toLowerCase()
+  if (role === 'viewer')  return 'บัญชีของคุณมีสิทธิ์ดูข้อมูลอย่างเดียว'
+  if (role === 'planner') return `คุณอยู่ฝ่าย ${user.section} ไม่สามารถแก้ไขงานฝ่าย ${task.section} ได้`
+  if (userSection !== taskSection) return `คุณอยู่ฝ่าย ${user.section} ไม่สามารถแก้ไขงานฝ่าย ${task.section} ได้`
+  if (role === 'technician') return 'คุณสามารถแก้ไขได้เฉพาะงานที่ได้รับมอบหมายให้คุณเท่านั้น'
+  return 'ไม่มีสิทธิ์แก้ไขงานนี้'
+}
 
 export default function TaskDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { can } = useAuth()
+  const { user, can } = useAuth()
 
-  const [task, setTask]       = useState(null)
-  const [photos, setPhotos]   = useState([])
-  const [loading, setLoading] = useState(true)
-  const [editing, setEditing] = useState(false)
-  const [saving, setSaving]   = useState(false)
+  const [task, setTask]         = useState(null)
+  const [photos, setPhotos]     = useState([])
+  const [loading, setLoading]   = useState(true)
+  const [editing, setEditing]   = useState(false)
+  const [saving, setSaving]     = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [error, setError]     = useState(null)
-  const [success, setSuccess] = useState(false)
-
-  // ฟอร์มแก้ไข
-  const [form, setForm] = useState({})
-
-  // อัปโหลดรูปเพิ่ม
+  const [error, setError]       = useState(null)
+  const [success, setSuccess]   = useState(false)
+  const [form, setForm]         = useState({})
   const [newPhotos, setNewPhotos]       = useState([])
   const [newPhotoType, setNewPhotoType] = useState('progress')
 
-  // -------------------------------------------------------
-  // โหลดข้อมูล
-  // -------------------------------------------------------
+  // ─── ดึง Technician ตาม section จาก Supabase ─────────────
+  const [members, setMembers]               = useState([])
+  const [loadingMembers, setLoadingMembers] = useState(false)
+
+  useEffect(() => {
+    if (!editing || !form.section) return
+    const fetchMembers = async () => {
+      setLoadingMembers(true)
+      const { data } = await supabase
+        .from('users')
+        .select('id, fullname')
+        .eq('section', form.section)
+        .ilike('role', 'technician')        // เฉพาะ Technician
+        .order('fullname', { ascending: true })
+      setMembers(data || [])
+      setLoadingMembers(false)
+    }
+    fetchMembers()
+  }, [editing, form.section])
+  // ────────────────────────────────────────────────────────
+
+  // โหลดข้อมูล task
   useEffect(() => {
     const fetchTask = async () => {
       setLoading(true)
-
       const { data: taskData, error: taskErr } = await supabase
-        .from('tasks')
-        .select('*')
-        .eq('id', id)
-        .single()
-
+        .from('tasks').select('*').eq('id', id).single()
       if (taskErr) { setError(taskErr.message); setLoading(false); return }
 
       const { data: photoData } = await supabase
-        .from('task_photos')
-        .select('*')
-        .eq('task_id', id)
+        .from('task_photos').select('*').eq('task_id', id)
         .order('created_at', { ascending: true })
 
       setTask(taskData)
@@ -81,62 +109,35 @@ export default function TaskDetailPage() {
     fetchTask()
   }, [id])
 
-  // -------------------------------------------------------
-  // บันทึกการแก้ไข
-  // -------------------------------------------------------
   const handleSave = async () => {
+    if (!canEditTask(user, task)) { setError('คุณไม่มีสิทธิ์แก้ไขงานนี้'); return }
     setSaving(true)
     setError(null)
-
     try {
-      // อัปเดต task
-      const { error: updateErr } = await supabase
-        .from('tasks')
-        .update({
-          title:       form.title,
-          description: form.description || null,
-          section:     form.section,
-          assigned_to: form.assigned_to,
-          priority:    form.priority,
-          status:      form.status,
-          start_date:  form.start_date || null,
-          end_date:    form.end_date   || null,
-        })
-        .eq('id', id)
-
+      const { error: updateErr } = await supabase.from('tasks').update({
+        title: form.title, description: form.description || null,
+        section: form.section, assigned_to: form.assigned_to,
+        priority: form.priority, status: form.status,
+        start_date: form.start_date || null, end_date: form.end_date || null,
+      }).eq('id', id)
       if (updateErr) throw updateErr
 
-      // อัปโหลดรูปใหม่ (ถ้ามี)
       if (newPhotos.length > 0) {
         const uploaded = await Promise.all(newPhotos.map(async (photo) => {
           const ext      = photo.file.name.split('.').pop()
           const fileName = `${id}/${Date.now()}_${photo.type}.${ext}`
-
           const { error: uploadErr } = await supabase.storage
-            .from('task-photos')
-            .upload(fileName, photo.file, { cacheControl: '3600', upsert: false })
-
+            .from('task-photos').upload(fileName, photo.file, { cacheControl: '3600', upsert: false })
           if (uploadErr) throw uploadErr
-
-          const { data: urlData } = supabase.storage
-            .from('task-photos')
-            .getPublicUrl(fileName)
-
+          const { data: urlData } = supabase.storage.from('task-photos').getPublicUrl(fileName)
           return { task_id: id, photo_url: urlData.publicUrl, photo_type: photo.type }
         }))
-
-        const { error: photoErr } = await supabase
-          .from('task_photos')
-          .insert(uploaded)
-
+        const { error: photoErr } = await supabase.from('task_photos').insert(uploaded)
         if (photoErr) throw photoErr
       }
 
-      // โหลดรูปใหม่
       const { data: refreshedPhotos } = await supabase
-        .from('task_photos')
-        .select('*')
-        .eq('task_id', id)
+        .from('task_photos').select('*').eq('task_id', id)
         .order('created_at', { ascending: true })
 
       setPhotos(refreshedPhotos || [])
@@ -145,7 +146,6 @@ export default function TaskDetailPage() {
       setEditing(false)
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
-
     } catch (err) {
       setError(err.message)
     } finally {
@@ -153,78 +153,43 @@ export default function TaskDetailPage() {
     }
   }
 
-  // -------------------------------------------------------
-  // ลบงาน
-  // -------------------------------------------------------
   const handleDelete = async () => {
     if (!window.confirm('ยืนยันลบงานนี้?')) return
     setDeleting(true)
-
-    // ลบรูปใน storage
     if (photos.length > 0) {
-      const paths = photos.map(p => {
-        const url = p.photo_url
-        return url.split('/task-photos/')[1]
-      }).filter(Boolean)
-
-      if (paths.length > 0) {
-        await supabase.storage.from('task-photos').remove(paths)
-      }
+      const paths = photos.map(p => p.photo_url.split('/task-photos/')[1]).filter(Boolean)
+      if (paths.length > 0) await supabase.storage.from('task-photos').remove(paths)
     }
-
     await supabase.from('task_photos').delete().eq('task_id', id)
     await supabase.from('tasks').delete().eq('id', id)
-
     navigate('/')
   }
 
-  // -------------------------------------------------------
-  // ลบรูปเดิม
-  // -------------------------------------------------------
   const handleDeletePhoto = async (photo) => {
     if (!window.confirm('ลบรูปนี้?')) return
-
     const path = photo.photo_url.split('/task-photos/')[1]
     if (path) await supabase.storage.from('task-photos').remove([path])
-
     await supabase.from('task_photos').delete().eq('id', photo.id)
     setPhotos(prev => prev.filter(p => p.id !== photo.id))
   }
 
   const handleNewPhotos = (e) => {
     const files = Array.from(e.target.files)
-    const mapped = files.map(file => ({
-      file,
-      url:  URL.createObjectURL(file),
-      name: file.name,
-      type: newPhotoType,
-    }))
-    setNewPhotos(prev => [...prev, ...mapped])
+    setNewPhotos(prev => [...prev, ...files.map(file => ({
+      file, url: URL.createObjectURL(file), name: file.name, type: newPhotoType,
+    }))])
     e.target.value = ''
   }
 
-  const photoTypeBadge = (type) => {
-    if (type === 'before')   return 'bg-orange-500'
-    if (type === 'after')    return 'bg-green-500'
-    return 'bg-blue-500'
-  }
-  const photoTypeLabel = (type) => {
-    if (type === 'before')   return 'ก่อน'
-    if (type === 'after')    return 'หลัง'
-    return 'ระหว่าง'
-  }
-
+  const photoTypeBadge = (type) => type === 'before' ? 'bg-orange-500' : type === 'after' ? 'bg-green-500' : 'bg-blue-500'
+  const photoTypeLabel = (type) => type === 'before' ? 'ก่อน' : type === 'after' ? 'หลัง' : 'ระหว่าง'
   const formatDate = (d) => d ? new Date(d).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'
 
-  // -------------------------------------------------------
-  // Render
-  // -------------------------------------------------------
   if (loading) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
       <div className="text-slate-400 animate-pulse text-lg">⏳ กำลังโหลด...</div>
     </div>
   )
-
   if (error && !task) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
       <div className="text-red-500">⚠️ {error}</div>
@@ -236,56 +201,45 @@ export default function TaskDetailPage() {
   return (
     <div className="min-h-screen bg-slate-50">
 
-      {/* Navbar */}
       <nav className="bg-white border-b border-slate-200 px-6 py-4 flex items-center gap-4 shadow-sm">
         <Link to="/" className="text-slate-400 hover:text-slate-600 transition">← กลับ</Link>
         <div className="flex items-center gap-2 flex-1">
           <span className="text-xl">📋</span>
           <h1 className="font-bold text-slate-800 truncate">{task.title}</h1>
         </div>
-        {/* ปุ่มแก้ไข / บันทึก */}
-        {can('edit') && (
+        {canEditTask(user, task) ? (
           <div className="flex gap-2">
             {editing ? (
               <>
-                <button
-                  onClick={() => { setEditing(false); setNewPhotos([]) }}
+                <button onClick={() => { setEditing(false); setNewPhotos([]) }}
                   className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-sm hover:bg-slate-50 transition"
-                >
-                  ยกเลิก
-                </button>
-                <button
-                  onClick={handleSave}
-                  disabled={saving}
+                >ยกเลิก</button>
+                <button onClick={handleSave} disabled={saving}
                   className="px-4 py-2 rounded-xl bg-blue-500 text-white text-sm font-semibold hover:bg-blue-400 disabled:opacity-60 transition"
-                >
-                  {saving ? '⏳ กำลังบันทึก...' : '💾 บันทึก'}
-                </button>
+                >{saving ? '⏳ กำลังบันทึก...' : '💾 บันทึก'}</button>
               </>
             ) : (
-              <button
-                onClick={() => setEditing(true)}
+              <button onClick={() => setEditing(true)}
                 className="px-4 py-2 rounded-xl bg-blue-500 text-white text-sm font-semibold hover:bg-blue-400 transition"
-              >
-                ✏️ แก้ไข
-              </button>
+              >✏️ แก้ไข</button>
             )}
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-600 rounded-xl px-3 py-2 text-xs font-medium">
+            <span>⛔</span><span>{getEditBlockReason(user, task)}</span>
           </div>
         )}
       </nav>
 
       <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
 
-        {/* Success toast */}
         {success && (
           <div className="bg-green-50 border border-green-200 text-green-700 rounded-xl px-4 py-3 text-sm flex items-center gap-2">
             ✅ บันทึกเรียบร้อยแล้ว
           </div>
         )}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
-            ⚠️ {error}
-          </div>
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">⚠️ {error}</div>
         )}
 
         {/* ข้อมูลงาน */}
@@ -295,116 +249,108 @@ export default function TaskDetailPage() {
               <span className="w-7 h-7 bg-blue-500 text-white rounded-lg flex items-center justify-center text-sm">1</span>
               ข้อมูลงาน
             </h2>
-            {/* Status badge (view mode) */}
             {!editing && statusInfo && (
               <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
                 task.status === 'done' ? 'bg-green-100 text-green-700' :
-                task.status === 'in_progress' ? 'bg-amber-100 text-amber-700' :
-                'bg-slate-100 text-slate-600'
-              }`}>
-                {statusInfo.label}
-              </span>
+                task.status === 'in_progress' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'
+              }`}>{statusInfo.label}</span>
             )}
           </div>
 
           {editing ? (
             <div className="space-y-4">
-              {/* ชื่องาน */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">ชื่องาน <span className="text-red-500">*</span></label>
-                <input
-                  type="text"
-                  value={form.title}
+                <input type="text" value={form.title}
                   onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                />
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"/>
               </div>
-              {/* รายละเอียด */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">รายละเอียด</label>
-                <textarea
-                  value={form.description}
+                <textarea value={form.description} rows={3}
                   onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
-                  rows={3}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition resize-none"
-                />
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition resize-none"/>
               </div>
-              {/* แผนก + ผู้รับผิดชอบ */}
+
+              {/* แผนก + ผู้รับผิดชอบ — ดึงจาก Supabase */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">แผนก</label>
-                  <select
-                    value={form.section}
+                  <select value={form.section}
                     onChange={e => setForm(p => ({ ...p, section: e.target.value, assigned_to: '' }))}
                     className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white transition"
                   >
-                    <option value="hydraulic">💧 Hydraulic</option>
-                    <option value="mechatronic">⚡ Mechatronic</option>
-                    <option value="mechanic">⚙️ Mechanic</option>
+                    <option value="Hydraulic">💧 Hydraulic</option>
+                    <option value="Mechatronic">⚡ Mechatronic</option>
+                    <option value="Mechanic">⚙️ Mechanic</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">ผู้รับผิดชอบ</label>
-                  <select
-                    value={form.assigned_to}
+                  <select value={form.assigned_to} disabled={loadingMembers}
                     onChange={e => setForm(p => ({ ...p, assigned_to: e.target.value }))}
-                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white transition"
+                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white disabled:opacity-60 transition"
                   >
-                    <option value="">-- เลือกช่าง --</option>
-                    {members[form.section]?.map(m => <option key={m} value={m}>{m}</option>)}
+                    <option value="">
+                      {loadingMembers ? '⏳ กำลังโหลด...' : '-- เลือกช่าง --'}
+                    </option>
+                    {members.map(m => (
+                      <option key={m.id} value={m.fullname}>{m.fullname}</option>
+                    ))}
+                    {!loadingMembers && members.length === 0 && (
+                      <option disabled>ไม่พบช่างใน {form.section}</option>
+                    )}
                   </select>
                 </div>
               </div>
+
               {/* Priority */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">ความเร่งด่วน</label>
                 <div className="flex gap-2 flex-wrap">
                   {priorityOptions.map(p => (
-                    <button
-                      type="button"
-                      key={p.value}
+                    <button type="button" key={p.value}
                       onClick={() => setForm(prev => ({ ...prev, priority: p.value }))}
                       className={`px-4 py-2 rounded-xl text-sm font-medium transition border ${
                         form.priority === p.value ? p.active + ' border-transparent shadow-sm' : p.bg + ' ' + p.text + ' border-slate-200'
                       }`}
-                    >
-                      {p.label}
-                    </button>
+                    >{p.label}</button>
                   ))}
                 </div>
               </div>
+
               {/* Status */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">สถานะ</label>
                 <div className="flex gap-2 flex-wrap">
                   {statusOptions.map(s => (
-                    <button
-                      type="button"
-                      key={s.value}
+                    <button type="button" key={s.value}
                       onClick={() => setForm(prev => ({ ...prev, status: s.value }))}
                       className={`px-4 py-2 rounded-xl text-sm font-medium transition border ${
                         form.status === s.value ? s.active + ' border-transparent shadow-sm' : s.bg + ' ' + s.text + ' border-slate-200'
                       }`}
-                    >
-                      {s.label}
-                    </button>
+                    >{s.label}</button>
                   ))}
                 </div>
               </div>
+
               {/* วันที่ */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">วันที่เริ่ม</label>
-                  <input type="date" value={form.start_date} onChange={e => setForm(p => ({ ...p, start_date: e.target.value }))}
+                  <input type="datetime-local" value={form.start_date}
+                    onChange={e => setForm(p => ({ ...p, start_date: e.target.value }))}
                     className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"/>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">วันที่คาดว่าเสร็จ</label>
-                  <input type="date" value={form.end_date} onChange={e => setForm(p => ({ ...p, end_date: e.target.value }))}
+                  <input type="datetime-local" value={form.end_date}
+                    onChange={e => setForm(p => ({ ...p, end_date: e.target.value }))}
                     className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"/>
                 </div>
               </div>
             </div>
+
           ) : (
             /* View Mode */
             <div className="space-y-4">
@@ -421,7 +367,7 @@ export default function TaskDetailPage() {
               <div className="grid grid-cols-2 gap-4 pt-2">
                 <div>
                   <p className="text-xs text-slate-400 mb-1">แผนก</p>
-                  <p className="text-slate-700 capitalize">{task.section}</p>
+                  <p className="text-slate-700">{task.section}</p>
                 </div>
                 <div>
                   <p className="text-xs text-slate-400 mb-1">ผู้รับผิดชอบ</p>
@@ -458,7 +404,6 @@ export default function TaskDetailPage() {
             <span className="w-7 h-7 bg-blue-500 text-white rounded-lg flex items-center justify-center text-sm">2</span>
             รูปภาพประกอบ ({photos.length} รูป)
           </h2>
-
           {photos.length > 0 ? (
             <div className="grid grid-cols-3 gap-3 mb-4">
               {photos.map((photo) => (
@@ -468,12 +413,9 @@ export default function TaskDetailPage() {
                     {photoTypeLabel(photo.photo_type)}
                   </div>
                   {editing && (
-                    <button
-                      onClick={() => handleDeletePhoto(photo)}
+                    <button onClick={() => handleDeletePhoto(photo)}
                       className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition flex items-center justify-center"
-                    >
-                      ✕
-                    </button>
+                    >✕</button>
                   )}
                 </div>
               ))}
@@ -482,7 +424,6 @@ export default function TaskDetailPage() {
             !editing && <p className="text-slate-400 text-sm text-center py-6">ไม่มีรูปภาพ</p>
           )}
 
-          {/* อัปโหลดรูปเพิ่ม (edit mode) */}
           {editing && (
             <div className="mt-2">
               <div className="flex gap-2 mb-3">
@@ -491,14 +432,11 @@ export default function TaskDetailPage() {
                   { value: 'progress', label: '🔧 ระหว่างดำเนินการ', color: 'bg-blue-500' },
                   { value: 'after',    label: '✅ หลังซ่อม',         color: 'bg-green-500' },
                 ].map(t => (
-                  <button type="button" key={t.value}
-                    onClick={() => setNewPhotoType(t.value)}
+                  <button type="button" key={t.value} onClick={() => setNewPhotoType(t.value)}
                     className={`px-3 py-2 rounded-xl text-sm font-medium transition ${
                       newPhotoType === t.value ? t.color + ' text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
                     }`}
-                  >
-                    {t.label}
-                  </button>
+                  >{t.label}</button>
                 ))}
               </div>
               <label className="block border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition group">
@@ -514,12 +452,9 @@ export default function TaskDetailPage() {
                       <div className={`absolute top-2 left-2 text-xs font-semibold px-2 py-0.5 rounded-full text-white ${photoTypeBadge(p.type)}`}>
                         {photoTypeLabel(p.type)}
                       </div>
-                      <button
-                        onClick={() => setNewPhotos(prev => prev.filter((_, j) => j !== i))}
+                      <button onClick={() => setNewPhotos(prev => prev.filter((_, j) => j !== i))}
                         className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition flex items-center justify-center"
-                      >
-                        ✕
-                      </button>
+                      >✕</button>
                     </div>
                   ))}
                 </div>
@@ -528,16 +463,11 @@ export default function TaskDetailPage() {
           )}
         </div>
 
-        {/* ปุ่มลบงาน */}
         {can('delete') && !editing && (
           <div className="flex justify-end">
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
+            <button onClick={handleDelete} disabled={deleting}
               className="px-5 py-2.5 rounded-xl bg-red-50 text-red-600 border border-red-200 text-sm font-medium hover:bg-red-100 disabled:opacity-60 transition"
-            >
-              {deleting ? '⏳ กำลังลบ...' : '🗑️ ลบงานนี้'}
-            </button>
+            >{deleting ? '⏳ กำลังลบ...' : '🗑️ ลบงานนี้'}</button>
           </div>
         )}
 
