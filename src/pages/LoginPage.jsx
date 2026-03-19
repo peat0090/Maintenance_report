@@ -24,14 +24,14 @@ export default function LoginPage() {
   const [testUsers, setTestUsers] = useState([])
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      const { data } = await supabase
-        .from('users')
-        .select('email, fullname, role, section')
-        .order('role', { ascending: true })
+const fetchUsers = async () => {
+  const { data } = await supabase
+    .from('users')
+    .select('email, fullname, role, section')
+    .eq('fullname', 'View 1')   // ← เพิ่มบรรทัดนี้
 
-      if (data) setTestUsers(data)
-    }
+  if (data) setTestUsers(data)
+}
     fetchUsers()
   }, [])
 
