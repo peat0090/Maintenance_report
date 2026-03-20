@@ -23,7 +23,6 @@ export default function AddTaskPage() {
   const [submitted, setSubmitted]       = useState(false)
   const [error, setError]               = useState(null)
 
-  // ─── ดึงเฉพาะ Technician ในแผนกที่เลือก ─────────────────
   const [members, setMembers]               = useState([])
   const [loadingMembers, setLoadingMembers] = useState(false)
 
@@ -36,7 +35,7 @@ export default function AddTaskPage() {
         .from('users')
         .select('id, fullname, role')
         .eq('section', form.section)
-        .ilike('role', 'technician')        // กรองเฉพาะ Technician
+        .ilike('role', 'technician')
         .order('fullname', { ascending: true })
 
       setMembers(data || [])
@@ -44,7 +43,6 @@ export default function AddTaskPage() {
     }
     fetchMembers()
   }, [form.section])
-  // ────────────────────────────────────────────────────────
 
   const handleChange = (e) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -109,11 +107,11 @@ export default function AddTaskPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
         <div className="text-center">
-          <div className="text-6xl mb-4">✅</div>
-          <h2 className="text-2xl font-bold text-slate-800 mb-2">บันทึกงานสำเร็จ!</h2>
-          <p className="text-slate-400">กำลังกลับไปหน้า Dashboard...</p>
+          <div className="text-5xl sm:text-6xl mb-4">✅</div>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">บันทึกงานสำเร็จ!</h2>
+          <p className="text-slate-400 text-sm sm:text-base">กำลังกลับไปหน้า Dashboard...</p>
         </div>
       </div>
     )
@@ -121,16 +119,17 @@ export default function AddTaskPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <nav className="bg-white border-b border-slate-200 px-6 py-4 flex items-center gap-4 shadow-sm">
-        <Link to="/" className="text-slate-400 hover:text-slate-600 transition">← กลับ</Link>
+      {/* Navbar */}
+      <nav className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-3 sm:gap-4 shadow-sm">
+        <Link to="/" className="text-slate-400 hover:text-slate-600 transition text-sm sm:text-base">← กลับ</Link>
         <div className="flex items-center gap-2">
-          <span className="text-xl">📋</span>
-          <h1 className="font-bold text-slate-800">เพิ่มงานใหม่</h1>
+          <span className="text-lg sm:text-xl">📋</span>
+          <h1 className="font-bold text-slate-800 text-sm sm:text-base">เพิ่มงานใหม่</h1>
         </div>
       </nav>
 
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="max-w-3xl mx-auto px-3 sm:px-4 py-5 sm:py-8">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm flex items-center gap-2">
@@ -138,34 +137,40 @@ export default function AddTaskPage() {
             </div>
           )}
 
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-            <h2 className="font-bold text-slate-800 mb-5 flex items-center gap-2">
-              <span className="w-7 h-7 bg-blue-500 text-white rounded-lg flex items-center justify-center text-sm">1</span>
+          {/* Section 1: ข้อมูลงาน */}
+          <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-100">
+            <h2 className="font-bold text-slate-800 mb-4 sm:mb-5 flex items-center gap-2 text-sm sm:text-base">
+              <span className="w-6 h-6 sm:w-7 sm:h-7 bg-blue-500 text-white rounded-lg flex items-center justify-center text-xs sm:text-sm shrink-0">1</span>
               ข้อมูลงาน
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">ชื่องาน <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
+                  ชื่องาน <span className="text-red-500">*</span>
+                </label>
                 <input type="text" name="title" value={form.title} onChange={handleChange} required
                   placeholder="เช่น ซ่อมปั๊มไฮดรอลิก Line A"
-                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-slate-800 text-sm placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">รายละเอียด</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">รายละเอียด</label>
                 <textarea name="description" value={form.description} onChange={handleChange} rows={3}
                   placeholder="อธิบายปัญหา วิธีการซ่อม อุปกรณ์ที่ใช้ ฯลฯ"
-                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition resize-none"
+                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-slate-800 text-sm placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition resize-none"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              {/* แผนก + ผู้รับผิดชอบ: 1 col on mobile, 2 col on sm+ */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">แผนก <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
+                    แผนก <span className="text-red-500">*</span>
+                  </label>
                   <select name="section" value={form.section} onChange={handleChange}
-                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition bg-white"
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition bg-white"
                   >
                     <option value="Hydraulic">💧 Hydraulic</option>
                     <option value="Mechatronic">⚡ Mechatronic</option>
@@ -173,10 +178,12 @@ export default function AddTaskPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">ผู้รับผิดชอบ <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
+                    ผู้รับผิดชอบ <span className="text-red-500">*</span>
+                  </label>
                   <select name="assigned_to" value={form.assigned_to} onChange={handleChange} required
                     disabled={loadingMembers}
-                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition bg-white disabled:opacity-60"
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition bg-white disabled:opacity-60"
                   >
                     <option value="">
                       {loadingMembers ? '⏳ กำลังโหลด...' : '-- เลือกช่าง --'}
@@ -191,8 +198,9 @@ export default function AddTaskPage() {
                 </div>
               </div>
 
+              {/* Priority */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">ความเร่งด่วน</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">ความเร่งด่วน</label>
                 <div className="flex gap-2 flex-wrap">
                   {[
                     { value: 'low',      label: 'ต่ำ',        bg: 'bg-slate-100', active: 'bg-slate-500 text-white',  text: 'text-slate-600' },
@@ -202,7 +210,7 @@ export default function AddTaskPage() {
                   ].map(p => (
                     <button type="button" key={p.value}
                       onClick={() => setForm(prev => ({ ...prev, priority: p.value }))}
-                      className={`px-4 py-2 rounded-xl text-sm font-medium transition border ${
+                      className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium transition border ${
                         form.priority === p.value ? p.active + ' border-transparent shadow-sm' : p.bg + ' ' + p.text + ' border-slate-200'
                       }`}
                     >{p.label}</button>
@@ -210,59 +218,62 @@ export default function AddTaskPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              {/* วันที่: 1 col on mobile, 2 col on sm+ */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">วันที่เริ่ม</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">วันที่เริ่ม</label>
                   <input type="datetime-local" name="start_date" value={form.start_date} onChange={handleChange}
-                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"/>
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"/>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">วันที่คาดว่าเสร็จ</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">วันที่คาดว่าเสร็จ</label>
                   <input type="datetime-local" name="end_date" value={form.end_date} onChange={handleChange}
-                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"/>
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"/>
                 </div>
               </div>
 
             </div>
           </div>
 
-          {/* รูปภาพ */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-            <h2 className="font-bold text-slate-800 mb-5 flex items-center gap-2">
-              <span className="w-7 h-7 bg-blue-500 text-white rounded-lg flex items-center justify-center text-sm">2</span>
+          {/* Section 2: รูปภาพ */}
+          <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-100">
+            <h2 className="font-bold text-slate-800 mb-4 sm:mb-5 flex items-center gap-2 text-sm sm:text-base">
+              <span className="w-6 h-6 sm:w-7 sm:h-7 bg-blue-500 text-white rounded-lg flex items-center justify-center text-xs sm:text-sm shrink-0">2</span>
               รูปภาพประกอบ
             </h2>
-            <div className="flex gap-2 mb-4">
+            {/* Photo type selector: scrollable on small screens */}
+            <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
               {[
                 { value: 'before',   label: '📷 ก่อนซ่อม',        color: 'bg-orange-500' },
                 { value: 'progress', label: '🔧 ระหว่างดำเนินการ', color: 'bg-blue-500' },
                 { value: 'after',    label: '✅ หลังซ่อม',         color: 'bg-green-500' },
               ].map(t => (
                 <button type="button" key={t.value} onClick={() => setPhotoType(t.value)}
-                  className={`px-3 py-2 rounded-xl text-sm font-medium transition ${
+                  className={`px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium transition whitespace-nowrap shrink-0 ${
                     photoType === t.value ? t.color + ' text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
                   }`}
                 >{t.label}</button>
               ))}
             </div>
-            <label className="block border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition group">
+            <label className="block border-2 border-dashed border-slate-200 rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition group">
               <input type="file" multiple accept="image/*" onChange={handlePhotos} className="hidden"/>
-              <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">🖼️</div>
-              <p className="text-slate-500 text-sm">คลิกเพื่อเลือกรูป หรือลากวางไฟล์ที่นี่</p>
-              <p className="text-slate-300 text-xs mt-1">รองรับ JPG, PNG, WEBP — สูงสุด 10MB ต่อไฟล์</p>
+              <div className="text-3xl sm:text-4xl mb-2 group-hover:scale-110 transition-transform">🖼️</div>
+              <p className="text-slate-500 text-xs sm:text-sm">แตะเพื่อเลือกรูป</p>
+              <p className="text-slate-300 text-xs mt-1">JPG, PNG, WEBP — สูงสุด 10MB</p>
             </label>
             {photos.length > 0 && (
-              <div className="mt-4">
-                <p className="text-sm font-medium text-slate-600 mb-3">รูปที่เลือก ({photos.length} รูป)</p>
-                <div className="grid grid-cols-3 gap-3">
+              <div className="mt-3 sm:mt-4">
+                <p className="text-xs sm:text-sm font-medium text-slate-600 mb-2 sm:mb-3">รูปที่เลือก ({photos.length} รูป)</p>
+                {/* 2 cols on mobile, 3 cols on sm+ */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                   {photos.map((photo, i) => (
                     <div key={i} className="relative group rounded-xl overflow-hidden aspect-square bg-slate-100">
                       <img src={photo.url} alt={photo.name} className="w-full h-full object-cover"/>
-                      <div className={`absolute top-2 left-2 text-xs font-semibold px-2 py-0.5 rounded-full text-white ${
+                      <div className={`absolute top-1.5 left-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full text-white ${
                         photo.type === 'before' ? 'bg-orange-500' : photo.type === 'after' ? 'bg-green-500' : 'bg-blue-500'
                       }`}>{photo.type === 'before' ? 'ก่อน' : photo.type === 'after' ? 'หลัง' : 'ระหว่าง'}</div>
                       <button type="button" onClick={() => removePhoto(i)}
-                        className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition flex items-center justify-center"
+                        className="absolute top-1.5 right-1.5 w-6 h-6 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition flex items-center justify-center"
                       >✕</button>
                       <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 truncate">{photo.name}</div>
                     </div>
@@ -272,10 +283,13 @@ export default function AddTaskPage() {
             )}
           </div>
 
-          <div className="flex gap-3">
-            <Link to="/" className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-medium text-center hover:bg-slate-50 transition">ยกเลิก</Link>
+          {/* Buttons */}
+          <div className="flex gap-3 pb-6">
+            <Link to="/" className="flex-1 py-2.5 sm:py-3 rounded-xl border border-slate-200 text-slate-600 font-medium text-center text-sm sm:text-base hover:bg-slate-50 transition">
+              ยกเลิก
+            </Link>
             <button type="submit" disabled={submitting}
-              className="flex-1 py-3 rounded-xl bg-blue-500 hover:bg-blue-400 disabled:opacity-60 text-white font-semibold transition shadow-lg"
+              className="flex-1 py-2.5 sm:py-3 rounded-xl bg-blue-500 hover:bg-blue-400 disabled:opacity-60 text-white font-semibold text-sm sm:text-base transition shadow-lg"
             >{submitting ? '⏳ กำลังบันทึก...' : '✅ บันทึกงาน'}</button>
           </div>
 

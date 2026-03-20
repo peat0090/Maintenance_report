@@ -59,7 +59,6 @@ export default function TaskDetailPage() {
   const [newPhotos, setNewPhotos]       = useState([])
   const [newPhotoType, setNewPhotoType] = useState('progress')
 
-  // ─── ดึง Technician ตาม section จาก Supabase ─────────────
   const [members, setMembers]               = useState([])
   const [loadingMembers, setLoadingMembers] = useState(false)
 
@@ -71,16 +70,14 @@ export default function TaskDetailPage() {
         .from('users')
         .select('id, fullname')
         .eq('section', form.section)
-        .ilike('role', 'technician')        // เฉพาะ Technician
+        .ilike('role', 'technician')
         .order('fullname', { ascending: true })
       setMembers(data || [])
       setLoadingMembers(false)
     }
     fetchMembers()
   }, [editing, form.section])
-  // ────────────────────────────────────────────────────────
 
-  // โหลดข้อมูล task
   useEffect(() => {
     const fetchTask = async () => {
       setLoading(true)
@@ -183,16 +180,19 @@ export default function TaskDetailPage() {
 
   const photoTypeBadge = (type) => type === 'before' ? 'bg-orange-500' : type === 'after' ? 'bg-green-500' : 'bg-blue-500'
   const photoTypeLabel = (type) => type === 'before' ? 'ก่อน' : type === 'after' ? 'หลัง' : 'ระหว่าง'
-  const formatDate = (d) => d ? new Date(d).toLocaleString('th-TH', { day: 'numeric', month: 'short', year: 'numeric',hour: '2-digit', minute: '2-digit',timeZone: 'Asia/Bangkok'}):'-'
+  const formatDate = (d) => d ? new Date(d).toLocaleString('th-TH', {
+    day: 'numeric', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok'
+  }) : '-'
 
   if (loading) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-      <div className="text-slate-400 animate-pulse text-lg">⏳ กำลังโหลด...</div>
+      <div className="text-slate-400 animate-pulse text-base sm:text-lg">⏳ กำลังโหลด...</div>
     </div>
   )
   if (error && !task) return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-      <div className="text-red-500">⚠️ {error}</div>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+      <div className="text-red-500 text-sm sm:text-base text-center">⚠️ {error}</div>
     </div>
   )
 
@@ -201,37 +201,52 @@ export default function TaskDetailPage() {
   return (
     <div className="min-h-screen bg-slate-50">
 
-      <nav className="bg-white border-b border-slate-200 px-6 py-4 flex items-center gap-4 shadow-sm">
-        <Link to="/" className="text-slate-400 hover:text-slate-600 transition">← กลับ</Link>
-        <div className="flex items-center gap-2 flex-1">
-          <span className="text-xl">📋</span>
-          <h1 className="font-bold text-slate-800 truncate">{task.title}</h1>
+      {/* Navbar */}
+      <nav className="bg-white border-b border-slate-200 px-3 sm:px-6 py-3 sm:py-4 flex items-center gap-2 sm:gap-4 shadow-sm">
+        <Link to="/" className="text-slate-400 hover:text-slate-600 transition text-sm sm:text-base shrink-0">← กลับ</Link>
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
+          <span className="text-lg sm:text-xl shrink-0">📋</span>
+          <h1 className="font-bold text-slate-800 truncate text-sm sm:text-base">{task.title}</h1>
         </div>
+
         {canEditTask(user, task) ? (
-          <div className="flex gap-2">
+          <div className="flex gap-1.5 sm:gap-2 shrink-0">
             {editing ? (
               <>
-                <button onClick={() => { setEditing(false); setNewPhotos([]) }}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-sm hover:bg-slate-50 transition"
+                <button
+                  onClick={() => { setEditing(false); setNewPhotos([]) }}
+                  className="px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl border border-slate-200 text-slate-600 text-xs sm:text-sm hover:bg-slate-50 transition"
                 >ยกเลิก</button>
-                <button onClick={handleSave} disabled={saving}
-                  className="px-4 py-2 rounded-xl bg-blue-500 text-white text-sm font-semibold hover:bg-blue-400 disabled:opacity-60 transition"
-                >{saving ? '⏳ กำลังบันทึก...' : '💾 บันทึก'}</button>
+                <button
+                  onClick={handleSave} disabled={saving}
+                  className="px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-white text-xs sm:text-sm font-semibold disabled:opacity-60 transition"
+                  style={{ backgroundColor: '#6b2444' }}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = '#4a0000'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = '#6b2444'}
+                >
+                  {saving ? '⏳...' : '💾 บันทึก'}
+                </button>
               </>
             ) : (
-              <button onClick={() => setEditing(true)}
-                className="px-4 py-2 rounded-xl bg-blue-500 text-white text-sm font-semibold hover:bg-blue-400 transition"
+              <button
+                onClick={() => setEditing(true)}
+                className="px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-white text-xs sm:text-sm font-semibold transition"
+                style={{ backgroundColor: '#6b2444' }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = '#4a0000'}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = '#6b2444'}
               >✏️ แก้ไข</button>
             )}
           </div>
         ) : (
-          <div className="flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-600 rounded-xl px-3 py-2 text-xs font-medium">
-            <span>⛔</span><span>{getEditBlockReason(user, task)}</span>
+          /* Permission denied badge — hide text on very small screens */
+          <div className="flex items-center gap-1 bg-red-50 border border-red-200 text-red-600 rounded-xl px-2 sm:px-3 py-1.5 sm:py-2 text-xs font-medium shrink-0 max-w-35 sm:max-w-none">
+            <span>⛔</span>
+            <span className="hidden sm:inline truncate">{getEditBlockReason(user, task)}</span>
           </div>
         )}
       </nav>
 
-      <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
+      <div className="max-w-3xl mx-auto px-3 sm:px-4 py-5 sm:py-8 space-y-4 sm:space-y-6">
 
         {success && (
           <div className="bg-green-50 border border-green-200 text-green-700 rounded-xl px-4 py-3 text-sm flex items-center gap-2">
@@ -243,14 +258,14 @@ export default function TaskDetailPage() {
         )}
 
         {/* ข้อมูลงาน */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="font-bold text-slate-800 flex items-center gap-2">
-              <span className="w-7 h-7 bg-blue-500 text-white rounded-lg flex items-center justify-center text-sm">1</span>
+        <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-100">
+          <div className="flex items-center justify-between mb-4 sm:mb-5">
+            <h2 className="font-bold text-slate-800 flex items-center gap-2 text-sm sm:text-base">
+              <span className="w-6 h-6 sm:w-7 sm:h-7 bg-blue-500 text-white rounded-lg flex items-center justify-center text-xs sm:text-sm shrink-0">1</span>
               ข้อมูลงาน
             </h2>
             {!editing && statusInfo && (
-              <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
+              <span className={`text-xs font-semibold px-2 sm:px-3 py-1 rounded-full ${
                 task.status === 'done' ? 'bg-green-100 text-green-700' :
                 task.status === 'in_progress' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'
               }`}>{statusInfo.label}</span>
@@ -258,27 +273,27 @@ export default function TaskDetailPage() {
           </div>
 
           {editing ? (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">ชื่องาน <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">ชื่องาน <span className="text-red-500">*</span></label>
                 <input type="text" value={form.title}
                   onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"/>
+                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"/>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">รายละเอียด</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">รายละเอียด</label>
                 <textarea value={form.description} rows={3}
                   onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition resize-none"/>
+                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition resize-none"/>
               </div>
 
-              {/* แผนก + ผู้รับผิดชอบ — ดึงจาก Supabase */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* แผนก + ผู้รับผิดชอบ: 1 col on mobile */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">แผนก</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">แผนก</label>
                   <select value={form.section}
                     onChange={e => setForm(p => ({ ...p, section: e.target.value, assigned_to: '' }))}
-                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white transition"
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white transition"
                   >
                     <option value="Hydraulic">💧 Hydraulic</option>
                     <option value="Mechatronic">⚡ Mechatronic</option>
@@ -286,14 +301,12 @@ export default function TaskDetailPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">ผู้รับผิดชอบ</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">ผู้รับผิดชอบ</label>
                   <select value={form.assigned_to} disabled={loadingMembers}
                     onChange={e => setForm(p => ({ ...p, assigned_to: e.target.value }))}
-                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white disabled:opacity-60 transition"
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white disabled:opacity-60 transition"
                   >
-                    <option value="">
-                      {loadingMembers ? '⏳ กำลังโหลด...' : '-- เลือกช่าง --'}
-                    </option>
+                    <option value="">{loadingMembers ? '⏳ กำลังโหลด...' : '-- เลือกช่าง --'}</option>
                     {members.map(m => (
                       <option key={m.id} value={m.fullname}>{m.fullname}</option>
                     ))}
@@ -306,12 +319,12 @@ export default function TaskDetailPage() {
 
               {/* Priority */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">ความเร่งด่วน</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">ความเร่งด่วน</label>
                 <div className="flex gap-2 flex-wrap">
                   {priorityOptions.map(p => (
                     <button type="button" key={p.value}
                       onClick={() => setForm(prev => ({ ...prev, priority: p.value }))}
-                      className={`px-4 py-2 rounded-xl text-sm font-medium transition border ${
+                      className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium transition border ${
                         form.priority === p.value ? p.active + ' border-transparent shadow-sm' : p.bg + ' ' + p.text + ' border-slate-200'
                       }`}
                     >{p.label}</button>
@@ -321,12 +334,12 @@ export default function TaskDetailPage() {
 
               {/* Status */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">สถานะ</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">สถานะ</label>
                 <div className="flex gap-2 flex-wrap">
                   {statusOptions.map(s => (
                     <button type="button" key={s.value}
                       onClick={() => setForm(prev => ({ ...prev, status: s.value }))}
-                      className={`px-4 py-2 rounded-xl text-sm font-medium transition border ${
+                      className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium transition border ${
                         form.status === s.value ? s.active + ' border-transparent shadow-sm' : s.bg + ' ' + s.text + ' border-slate-200'
                       }`}
                     >{s.label}</button>
@@ -334,29 +347,29 @@ export default function TaskDetailPage() {
                 </div>
               </div>
 
-              {/* วันที่ */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* วันที่: 1 col on mobile */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">วันที่เริ่ม</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">วันที่เริ่ม</label>
                   <input type="datetime-local" value={form.start_date}
                     onChange={e => setForm(p => ({ ...p, start_date: e.target.value }))}
-                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"/>
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"/>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">วันที่คาดว่าเสร็จ</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">วันที่คาดว่าเสร็จ</label>
                   <input type="datetime-local" value={form.end_date}
                     onChange={e => setForm(p => ({ ...p, end_date: e.target.value }))}
-                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"/>
+                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"/>
                 </div>
               </div>
             </div>
 
           ) : (
             /* View Mode */
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div>
                 <p className="text-xs text-slate-400 mb-1">ชื่องาน</p>
-                <p className="text-slate-800 font-semibold">{task.title}</p>
+                <p className="text-slate-800 font-semibold text-sm sm:text-base">{task.title}</p>
               </div>
               {task.description && (
                 <div>
@@ -364,33 +377,34 @@ export default function TaskDetailPage() {
                   <p className="text-slate-700 text-sm leading-relaxed">{task.description}</p>
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-4 pt-2">
+              {/* Info grid: 2 cols always, tighter on mobile */}
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:gap-4 pt-1 sm:pt-2">
                 <div>
-                  <p className="text-xs text-slate-400 mb-1">แผนก</p>
-                  <p className="text-slate-700">{task.section}</p>
+                  <p className="text-xs text-slate-400 mb-0.5">แผนก</p>
+                  <p className="text-slate-700 text-sm">{task.section}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400 mb-1">ผู้รับผิดชอบ</p>
-                  <p className="text-slate-700">{task.assigned_to}</p>
+                  <p className="text-xs text-slate-400 mb-0.5">ผู้รับผิดชอบ</p>
+                  <p className="text-slate-700 text-sm">{task.assigned_to}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400 mb-1">ความเร่งด่วน</p>
-                  <p className="text-slate-700">{priorityOptions.find(p => p.value === task.priority)?.label || task.priority}</p>
+                  <p className="text-xs text-slate-400 mb-0.5">ความเร่งด่วน</p>
+                  <p className="text-slate-700 text-sm">{priorityOptions.find(p => p.value === task.priority)?.label || task.priority}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400 mb-1">วันที่บันทึก</p>
-                  <p className="text-slate-700">{formatDate(task.created_at)}</p>
+                  <p className="text-xs text-slate-400 mb-0.5">วันที่บันทึก</p>
+                  <p className="text-slate-700 text-sm">{formatDate(task.created_at)}</p>
                 </div>
                 {task.start_date && (
                   <div>
-                    <p className="text-xs text-slate-400 mb-1">วันที่เริ่ม</p>
-                    <p className="text-slate-700">{formatDate(task.start_date)}</p>
+                    <p className="text-xs text-slate-400 mb-0.5">วันที่เริ่ม</p>
+                    <p className="text-slate-700 text-sm">{formatDate(task.start_date)}</p>
                   </div>
                 )}
                 {task.end_date && (
                   <div>
-                    <p className="text-xs text-slate-400 mb-1">วันที่คาดว่าเสร็จ</p>
-                    <p className="text-slate-700">{formatDate(task.end_date)}</p>
+                    <p className="text-xs text-slate-400 mb-0.5">วันที่คาดว่าเสร็จ</p>
+                    <p className="text-slate-700 text-sm">{formatDate(task.end_date)}</p>
                   </div>
                 )}
               </div>
@@ -399,22 +413,23 @@ export default function TaskDetailPage() {
         </div>
 
         {/* รูปภาพ */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <h2 className="font-bold text-slate-800 mb-5 flex items-center gap-2">
-            <span className="w-7 h-7 bg-blue-500 text-white rounded-lg flex items-center justify-center text-sm">2</span>
+        <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-100">
+          <h2 className="font-bold text-slate-800 mb-4 sm:mb-5 flex items-center gap-2 text-sm sm:text-base">
+            <span className="w-6 h-6 sm:w-7 sm:h-7 bg-blue-500 text-white rounded-lg flex items-center justify-center text-xs sm:text-sm shrink-0">2</span>
             รูปภาพประกอบ ({photos.length} รูป)
           </h2>
           {photos.length > 0 ? (
-            <div className="grid grid-cols-3 gap-3 mb-4">
+            // 2 cols on mobile, 3 cols on sm+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mb-3 sm:mb-4">
               {photos.map((photo) => (
                 <div key={photo.id} className="relative group rounded-xl overflow-hidden aspect-square bg-slate-100">
                   <img src={photo.photo_url} alt="" className="w-full h-full object-cover"/>
-                  <div className={`absolute top-2 left-2 text-xs font-semibold px-2 py-0.5 rounded-full text-white ${photoTypeBadge(photo.photo_type)}`}>
+                  <div className={`absolute top-1.5 left-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full text-white ${photoTypeBadge(photo.photo_type)}`}>
                     {photoTypeLabel(photo.photo_type)}
                   </div>
                   {editing && (
                     <button onClick={() => handleDeletePhoto(photo)}
-                      className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition flex items-center justify-center"
+                      className="absolute top-1.5 right-1.5 w-6 h-6 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 active:opacity-100 transition flex items-center justify-center"
                     >✕</button>
                   )}
                 </div>
@@ -426,34 +441,35 @@ export default function TaskDetailPage() {
 
           {editing && (
             <div className="mt-2">
-              <div className="flex gap-2 mb-3">
+              {/* Photo type: scrollable on mobile */}
+              <div className="flex gap-2 mb-3 overflow-x-auto pb-1">
                 {[
                   { value: 'before',   label: '📷 ก่อนซ่อม',        color: 'bg-orange-500' },
                   { value: 'progress', label: '🔧 ระหว่างดำเนินการ', color: 'bg-blue-500' },
                   { value: 'after',    label: '✅ หลังซ่อม',         color: 'bg-green-500' },
                 ].map(t => (
                   <button type="button" key={t.value} onClick={() => setNewPhotoType(t.value)}
-                    className={`px-3 py-2 rounded-xl text-sm font-medium transition ${
+                    className={`px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium transition whitespace-nowrap shrink-0 ${
                       newPhotoType === t.value ? t.color + ' text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
                     }`}
                   >{t.label}</button>
                 ))}
               </div>
-              <label className="block border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition group">
+              <label className="block border-2 border-dashed border-slate-200 rounded-xl sm:rounded-2xl p-5 sm:p-6 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition group">
                 <input type="file" multiple accept="image/*" onChange={handleNewPhotos} className="hidden"/>
                 <div className="text-3xl mb-1 group-hover:scale-110 transition-transform">🖼️</div>
-                <p className="text-slate-500 text-sm">คลิกเพื่อเพิ่มรูป</p>
+                <p className="text-slate-500 text-xs sm:text-sm">แตะเพื่อเพิ่มรูป</p>
               </label>
               {newPhotos.length > 0 && (
-                <div className="grid grid-cols-3 gap-3 mt-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mt-3">
                   {newPhotos.map((p, i) => (
                     <div key={i} className="relative group rounded-xl overflow-hidden aspect-square bg-slate-100">
                       <img src={p.url} alt={p.name} className="w-full h-full object-cover"/>
-                      <div className={`absolute top-2 left-2 text-xs font-semibold px-2 py-0.5 rounded-full text-white ${photoTypeBadge(p.type)}`}>
+                      <div className={`absolute top-1.5 left-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full text-white ${photoTypeBadge(p.type)}`}>
                         {photoTypeLabel(p.type)}
                       </div>
                       <button onClick={() => setNewPhotos(prev => prev.filter((_, j) => j !== i))}
-                        className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition flex items-center justify-center"
+                        className="absolute top-1.5 right-1.5 w-6 h-6 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 active:opacity-100 transition flex items-center justify-center"
                       >✕</button>
                     </div>
                   ))}
@@ -464,9 +480,9 @@ export default function TaskDetailPage() {
         </div>
 
         {can('delete') && !editing && (
-          <div className="flex justify-end">
+          <div className="flex justify-end pb-6">
             <button onClick={handleDelete} disabled={deleting}
-              className="px-5 py-2.5 rounded-xl bg-red-50 text-red-600 border border-red-200 text-sm font-medium hover:bg-red-100 disabled:opacity-60 transition"
+              className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-red-50 text-red-600 border border-red-200 text-sm font-medium hover:bg-red-100 disabled:opacity-60 transition"
             >{deleting ? '⏳ กำลังลบ...' : '🗑️ ลบงานนี้'}</button>
           </div>
         )}
