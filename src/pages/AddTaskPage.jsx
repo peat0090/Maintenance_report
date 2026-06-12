@@ -107,92 +107,95 @@ export default function AddTaskPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-zinc-950 text-zinc-100 font-['Prompt',sans-serif] flex items-center justify-center px-4">
         <div className="text-center">
-          <div className="text-5xl sm:text-6xl mb-4">✅</div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">บันทึกงานสำเร็จ!</h2>
-          <p className="text-slate-400 text-sm sm:text-base">กำลังกลับไปหน้า Dashboard...</p>
+          <div className="w-20 h-20 mx-auto mb-5 rounded-sm bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-3xl">✓</div>
+          <h2 className="text-2xl font-semibold mb-2 tracking-tight">Task Added Successfully</h2>
+          <p className="text-zinc-500 text-sm tracking-wider uppercase"> Dashboard...</p>
         </div>
       </div>
     )
   }
 
+  const inputCls = "w-full bg-zinc-950 border border-zinc-800 rounded-sm px-4 py-3 text-zinc-100 text-sm placeholder-zinc-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition"
+
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-['Prompt',sans-serif]">
       {/* Navbar */}
-      <nav className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-3 sm:gap-4 shadow-sm">
-        <Link to="/" className="text-slate-400 hover:text-slate-600 transition text-sm sm:text-base">← กลับ</Link>
+      <nav className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur border-b border-zinc-800 px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-4">
+        <Link to="/" className="text-zinc-500 hover:text-orange-400 transition text-sm tracking-wider">← Back</Link>
+        <div className="h-5 w-px bg-zinc-800" />
         <div className="flex items-center gap-2">
-          <span className="text-lg sm:text-xl">📋</span>
-          <h1 className="font-bold text-slate-800 text-sm sm:text-base">เพิ่มงานใหม่</h1>
+          <span className="text-[10px] font-mono text-zinc-600 tracking-widest hidden sm:inline">[NEW]</span>
+          <h1 className="font-medium text-sm sm:text-base tracking-tight">Add New Task</h1>
         </div>
       </nav>
 
-      <div className="max-w-3xl mx-auto px-3 sm:px-4 py-5 sm:py-8">
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        <form onSubmit={handleSubmit} className="space-y-5">
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm flex items-center gap-2">
-              <span>⚠️</span> {error}
+            <div className="bg-red-950/40 border border-red-900/60 text-red-300 rounded-sm px-4 py-3 text-sm flex items-center gap-2">
+              <span>⚠</span> {error}
             </div>
           )}
 
-          {/* Section 1: ข้อมูลงาน */}
-          <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-100">
-            <h2 className="font-bold text-slate-800 mb-4 sm:mb-5 flex items-center gap-2 text-sm sm:text-base">
-              <span className="w-6 h-6 sm:w-7 sm:h-7 bg-blue-500 text-white rounded-lg flex items-center justify-center text-xs sm:text-sm shrink-0">1</span>
-              ข้อมูลงาน
-            </h2>
-            <div className="space-y-3 sm:space-y-4">
+          {/* Section 1: Task Information */}
+          <div className="bg-zinc-900 rounded-sm border border-zinc-800 overflow-hidden">
+            <div className="flex items-center justify-between px-5 sm:px-6 py-3 border-b border-zinc-800 bg-zinc-900/60">
+              <h2 className="font-medium flex items-center gap-3 text-sm">
+                <span className="w-6 h-6 bg-orange-500 text-zinc-950 rounded-sm flex items-center justify-center text-xs font-bold">1</span>
+                <span className="tracking-wider uppercase text-zinc-300">Task Information</span>
+              </h2>
+              <span className="text-[10px] font-mono text-zinc-600">// TASK</span>
+            </div>
+            <div className="p-5 sm:p-6 space-y-4">
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
-                  ชื่องาน <span className="text-red-500">*</span>
+                <label className="block text-[11px] font-medium text-zinc-500 mb-2 tracking-wider uppercase">
+                  Task Name <span className="text-orange-500">*</span>
                 </label>
                 <input type="text" name="title" value={form.title} onChange={handleChange} required
-                  placeholder="เช่น ซ่อมปั๊มไฮดรอลิก Line A"
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-slate-800 text-sm placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                  placeholder="leaking pipe, broken gear, etc."
+                  className={inputCls}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">รายละเอียด</label>
+                <label className="block text-[11px] font-medium text-zinc-500 mb-2 tracking-wider uppercase">Description</label>
                 <textarea name="description" value={form.description} onChange={handleChange} rows={3}
-                  placeholder="อธิบายปัญหา วิธีการซ่อม อุปกรณ์ที่ใช้ ฯลฯ"
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-slate-800 text-sm placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition resize-none"
+                  placeholder="Describe the issue, repair method, equipment used, etc."
+                  className={inputCls + " resize-none"}
                 />
               </div>
 
-              {/* แผนก + ผู้รับผิดชอบ: 1 col on mobile, 2 col on sm+ */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
-                    แผนก <span className="text-red-500">*</span>
+                  <label className="block text-[11px] font-medium text-zinc-500 mb-2 tracking-wider uppercase">
+                    Section <span className="text-orange-500">*</span>
                   </label>
-                  <select name="section" value={form.section} onChange={handleChange}
-                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition bg-white"
-                  >
-                    <option value="Hydraulic">💧 Hydraulic</option>
-                    <option value="Mechatronic">⚡ Mechatronic</option>
-                    <option value="Mechanic">⚙️ Mechanic</option>
+                  <select name="section" value={form.section} onChange={handleChange} className={inputCls}>
+                    <option value="Hydraulic">Hydraulic</option>
+                    <option value="Mechatronic">Mechatronic</option>
+                    <option value="Mechanic">Mechanic</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
-                    ผู้รับผิดชอบ <span className="text-red-500">*</span>
+                  <label className="block text-[11px] font-medium text-zinc-500 mb-2 tracking-wider uppercase">
+                    Assigned To <span className="text-orange-500">*</span>
                   </label>
                   <select name="assigned_to" value={form.assigned_to} onChange={handleChange} required
                     disabled={loadingMembers}
-                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition bg-white disabled:opacity-60"
+                    className={inputCls + " disabled:opacity-60"}
                   >
                     <option value="">
-                      {loadingMembers ? '⏳ กำลังโหลด...' : '-- เลือกช่าง --'}
+                      {loadingMembers ? 'Loading...' : '— Technician —'}
                     </option>
                     {members.map(m => (
                       <option key={m.id} value={m.fullname}>{m.fullname}</option>
                     ))}
                     {!loadingMembers && members.length === 0 && (
-                      <option disabled>ไม่พบช่างใน {form.section}</option>
+                      <option disabled>No technicians found in {form.section}</option>
                     )}
                   </select>
                 </div>
@@ -200,35 +203,32 @@ export default function AddTaskPage() {
 
               {/* Priority */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">ความเร่งด่วน</label>
-                <div className="flex gap-2 flex-wrap">
+                <label className="block text-[11px] font-medium text-zinc-500 mb-2 tracking-wider uppercase">Priority</label>
+                <div className="grid grid-cols-4 gap-2">
                   {[
-                    { value: 'low',      label: 'ต่ำ',        bg: 'bg-slate-100', active: 'bg-slate-500 text-white',  text: 'text-slate-600' },
-                    { value: 'medium',   label: 'ปานกลาง',    bg: 'bg-blue-50',   active: 'bg-blue-500 text-white',   text: 'text-blue-600' },
-                    { value: 'high',     label: 'สูง',         bg: 'bg-orange-50', active: 'bg-orange-500 text-white', text: 'text-orange-600' },
-                    { value: 'critical', label: '🚨 เร่งด่วน', bg: 'bg-red-50',    active: 'bg-red-500 text-white',    text: 'text-red-600' },
+                    { value: 'low',      label: 'Low',        active: 'bg-zinc-700 text-zinc-100 border-zinc-600' },
+                    { value: 'medium',   label: 'Medium',    active: 'bg-sky-500/20 text-sky-300 border-sky-500/50' },
+                    { value: 'high',     label: 'High',         active: 'bg-orange-500/20 text-orange-300 border-orange-500/60' },
+                    { value: 'critical', label: 'Urgent',    active: 'bg-red-500/20 text-red-300 border-red-500/60' },
                   ].map(p => (
                     <button type="button" key={p.value}
                       onClick={() => setForm(prev => ({ ...prev, priority: p.value }))}
-                      className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium transition border ${
-                        form.priority === p.value ? p.active + ' border-transparent shadow-sm' : p.bg + ' ' + p.text + ' border-slate-200'
+                      className={`px-3 py-2.5 rounded-sm text-xs font-semibold tracking-wider uppercase transition border ${
+                        form.priority === p.value ? p.active : 'bg-zinc-950 text-zinc-500 border-zinc-800 hover:border-zinc-700'
                       }`}
                     >{p.label}</button>
                   ))}
                 </div>
               </div>
 
-              {/* วันที่: 1 col on mobile, 2 col on sm+ */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">วันที่เริ่ม</label>
-                  <input type="datetime-local" name="start_date" value={form.start_date} onChange={handleChange}
-                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"/>
+                  <label className="block text-[11px] font-medium text-zinc-500 mb-2 tracking-wider uppercase">Start Date</label>
+                  <input type="datetime-local" name="start_date" value={form.start_date} onChange={handleChange} className={inputCls + " scheme-dark"}/>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">วันที่คาดว่าเสร็จ</label>
-                  <input type="datetime-local" name="end_date" value={form.end_date} onChange={handleChange}
-                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"/>
+                  <label className="block text-[11px] font-medium text-zinc-500 mb-2 tracking-wider uppercase">End Date</label>
+                  <input type="datetime-local" name="end_date" value={form.end_date} onChange={handleChange} className={inputCls + " scheme-dark"}/>
                 </div>
               </div>
 
@@ -236,61 +236,68 @@ export default function AddTaskPage() {
           </div>
 
           {/* Section 2: รูปภาพ */}
-          <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-100">
-            <h2 className="font-bold text-slate-800 mb-4 sm:mb-5 flex items-center gap-2 text-sm sm:text-base">
-              <span className="w-6 h-6 sm:w-7 sm:h-7 bg-blue-500 text-white rounded-lg flex items-center justify-center text-xs sm:text-sm shrink-0">2</span>
-              รูปภาพประกอบ
-            </h2>
-            {/* Photo type selector: scrollable on small screens */}
-            <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
-              {[
-                { value: 'before',   label: '📷 ก่อนซ่อม',        color: 'bg-orange-500' },
-                { value: 'progress', label: '🔧 ระหว่างดำเนินการ', color: 'bg-blue-500' },
-                { value: 'after',    label: '✅ หลังซ่อม',         color: 'bg-green-500' },
-              ].map(t => (
-                <button type="button" key={t.value} onClick={() => setPhotoType(t.value)}
-                  className={`px-3 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium transition whitespace-nowrap shrink-0 ${
-                    photoType === t.value ? t.color + ' text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                  }`}
-                >{t.label}</button>
-              ))}
+          <div className="bg-zinc-900 rounded-sm border border-zinc-800 overflow-hidden">
+            <div className="flex items-center justify-between px-5 sm:px-6 py-3 border-b border-zinc-800 bg-zinc-900/60">
+              <h2 className="font-medium flex items-center gap-3 text-sm">
+                <span className="w-6 h-6 bg-orange-500 text-zinc-950 rounded-sm flex items-center justify-center text-xs font-bold">2</span>
+                <span className="tracking-wider uppercase text-zinc-300">Images</span>
+              </h2>
+              <span className="text-[10px] font-mono text-zinc-600">// MEDIA</span>
             </div>
-            <label className="block border-2 border-dashed border-slate-200 rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition group">
-              <input type="file" multiple accept="image/*" onChange={handlePhotos} className="hidden"/>
-              <div className="text-3xl sm:text-4xl mb-2 group-hover:scale-110 transition-transform">🖼️</div>
-              <p className="text-slate-500 text-xs sm:text-sm">แตะเพื่อเลือกรูป</p>
-              <p className="text-slate-300 text-xs mt-1">JPG, PNG, WEBP — สูงสุด 10MB</p>
-            </label>
-            {photos.length > 0 && (
-              <div className="mt-3 sm:mt-4">
-                <p className="text-xs sm:text-sm font-medium text-slate-600 mb-2 sm:mb-3">รูปที่เลือก ({photos.length} รูป)</p>
-                {/* 2 cols on mobile, 3 cols on sm+ */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-                  {photos.map((photo, i) => (
-                    <div key={i} className="relative group rounded-xl overflow-hidden aspect-square bg-slate-100">
-                      <img src={photo.url} alt={photo.name} className="w-full h-full object-cover"/>
-                      <div className={`absolute top-1.5 left-1.5 text-xs font-semibold px-1.5 py-0.5 rounded-full text-white ${
-                        photo.type === 'before' ? 'bg-orange-500' : photo.type === 'after' ? 'bg-green-500' : 'bg-blue-500'
-                      }`}>{photo.type === 'before' ? 'ก่อน' : photo.type === 'after' ? 'หลัง' : 'ระหว่าง'}</div>
-                      <button type="button" onClick={() => removePhoto(i)}
-                        className="absolute top-1.5 right-1.5 w-6 h-6 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition flex items-center justify-center"
-                      >✕</button>
-                      <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 truncate">{photo.name}</div>
-                    </div>
-                  ))}
-                </div>
+            <div className="p-5 sm:p-6">
+              <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+                {[
+                  { value: 'before',   label: 'Before Repair',     color: 'border-orange-500 bg-orange-500/15 text-orange-300' },
+                  { value: 'progress', label: 'In Progress',     color: 'border-sky-500 bg-sky-500/15 text-sky-300' },
+                  { value: 'after',    label: 'After Repair',      color: 'border-emerald-500 bg-emerald-500/15 text-emerald-300' },
+                ].map(t => (
+                  <button type="button" key={t.value} onClick={() => setPhotoType(t.value)}
+                    className={`px-3 py-2 rounded-sm text-xs font-semibold uppercase tracking-wider transition whitespace-nowrap shrink-0 border ${
+                      photoType === t.value ? t.color : 'bg-zinc-950 text-zinc-500 border-zinc-800 hover:border-zinc-700'
+                    }`}
+                  >{t.label}</button>
+                ))}
               </div>
-            )}
+              <label className="block border border-dashed border-zinc-700 hover:border-orange-500 rounded-sm p-8 text-center cursor-pointer hover:bg-orange-500/5 transition group">
+                <input type="file" multiple accept="image/*" onChange={handlePhotos} className="hidden"/>
+                <div className="text-3xl mb-2 text-zinc-600 group-hover:text-orange-500 group-hover:scale-110 transition">◫</div>
+                <p className="text-zinc-300 text-sm tracking-wider uppercase">Tap to select images</p>
+                <p className="text-zinc-600 text-[11px] font-mono mt-1">JPG · PNG · WEBP — MAX 10MB</p>
+              </label>
+              {photos.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-[11px] tracking-wider uppercase text-zinc-500 mb-3">Selected Images ({photos.length})</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+                    {photos.map((photo, i) => (
+                      <div key={i} className="relative group rounded-sm overflow-hidden aspect-square bg-zinc-950 border border-zinc-800">
+                        <img src={photo.url} alt={photo.name} className="w-full h-full object-cover"/>
+                        <div className={`absolute top-1.5 left-1.5 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-sm text-zinc-950 ${
+                          photo.type === 'before' ? 'bg-orange-400' : photo.type === 'after' ? 'bg-emerald-400' : 'bg-sky-400'
+                        }`}>{photo.type === 'before' ? 'Before' : photo.type === 'after' ? 'After' : 'In Progress'}</div>
+                        <button type="button" onClick={() => removePhoto(i)}
+                          className="absolute top-1.5 right-1.5 w-6 h-6 bg-red-500 text-white rounded-sm text-xs opacity-0 group-hover:opacity-100 transition flex items-center justify-center"
+                        >✕</button>
+                        <div className="absolute bottom-0 left-0 right-0 bg-zinc-950/80 backdrop-blur text-zinc-300 text-[10px] font-mono p-1 truncate">{photo.name}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Buttons */}
-          <div className="flex gap-3 pb-6">
-            <Link to="/" className="flex-1 py-2.5 sm:py-3 rounded-xl border border-slate-200 text-slate-600 font-medium text-center text-sm sm:text-base hover:bg-slate-50 transition">
-              ยกเลิก
+          <div className="flex gap-3 pb-8">
+            <Link to="/" className="flex-1 py-3 rounded-sm border border-zinc-800 text-zinc-400 font-semibold text-center text-sm uppercase tracking-wider hover:bg-zinc-900 hover:text-zinc-200 transition">
+              Cancel
             </Link>
             <button type="submit" disabled={submitting}
-              className="flex-1 py-2.5 sm:py-3 rounded-xl bg-blue-500 hover:bg-blue-400 disabled:opacity-60 text-white font-semibold text-sm sm:text-base transition shadow-lg"
-            >{submitting ? '⏳ กำลังบันทึก...' : '✅ บันทึกงาน'}</button>
+              className="flex-1 py-3 rounded-sm bg-orange-500 hover:bg-orange-400 disabled:opacity-60 text-zinc-950 font-bold text-sm uppercase tracking-wider transition shadow-[0_8px_24px_-8px_rgba(255,122,26,0.5)] flex items-center justify-center gap-2"
+            >
+              {submitting ? (
+                <><span className="w-3 h-3 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin"/>Saving</>
+              ) : 'Save'}
+            </button>
           </div>
 
         </form>

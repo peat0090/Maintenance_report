@@ -4,30 +4,33 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabaseClient'
 
 const sectionColor = {
-  Hydraulic:   { bg: 'bg-blue-100',   text: 'text-blue-700',   label: 'Hydraulic' },
-  Mechatronic: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Mechatronic' },
-  Mechanic:    { bg: 'bg-amber-100',  text: 'text-amber-700',  label: 'Mechanic' },
+  Hydraulic:   { bg: 'bg-sky-500/10',     text: 'text-sky-400',     ring: 'ring-sky-500/30',     label: 'Hydraulic' },
+  Mechatronic: { bg: 'bg-fuchsia-500/10', text: 'text-fuchsia-400', ring: 'ring-fuchsia-500/30', label: 'Mechatronic' },
+  Mechanic:    { bg: 'bg-amber-500/10',   text: 'text-amber-400',   ring: 'ring-amber-500/30',   label: 'Mechanic' },
 }
 
 const priorityColor = {
-  low:      { bg: 'bg-slate-100',  text: 'text-slate-600',  label: 'ต่ำ' },
-  medium:   { bg: 'bg-blue-100',   text: 'text-blue-700',   label: 'ปานกลาง' },
-  high:     { bg: 'bg-orange-100', text: 'text-orange-700', label: 'สูง' },
-  critical: { bg: 'bg-red-100',    text: 'text-red-700',    label: 'เร่งด่วน' },
+  low:      { bg: 'bg-zinc-800',         text: 'text-zinc-400',   label: 'Low' },
+  medium:   { bg: 'bg-sky-500/10',       text: 'text-sky-400',    label: 'Medium' },
+  high:     { bg: 'bg-orange-500/15',    text: 'text-orange-400', label: 'High' },
+  critical: { bg: 'bg-red-500/15',       text: 'text-red-400',    label: 'Urgent' },
 }
 
 const roleColor = {
   admin:      'bg-red-500',
   manager:    'bg-amber-500',
-  technician: 'bg-blue-500',
-  viewer:     'bg-slate-500',
+  technician: 'bg-orange-500',
+  viewer:     'bg-zinc-600',
 }
 
 const formatDate = (dateStr) => {
   if (!dateStr) return '-'
-  return new Date(dateStr).toLocaleString('th-TH', {
-    day: 'numeric', month: 'short',
-    hour: '2-digit', minute: '2-digit',
+  return new Date(dateStr).toLocaleString('en-GB', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
     timeZone: 'Asia/Bangkok'
   })
 }
@@ -100,79 +103,98 @@ export default function DashboardPage() {
     : 0
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-['Prompt',sans-serif]">
 
       {/* Navbar */}
-      <nav className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <span className="text-xl sm:text-2xl">🔧</span>
+      <nav className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur border-b border-zinc-800 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-sm bg-orange-500 text-zinc-950 flex items-center justify-center font-bold text-lg shadow-[0_0_20px_-2px_rgba(255,122,26,0.6)]">
+            M
+          </div>
           <div>
-            <h1 className="font-bold text-slate-800 leading-tight text-sm sm:text-base">Maintenance Report</h1>
-            <p className="text-xs text-slate-400 hidden sm:block">ระบบรายงานงานซ่อมบำรุง</p>
+            <h1 className="font-semibold leading-tight text-sm sm:text-base tracking-tight">
+              Maintenance <span className="text-orange-500">/</span> OS
+            </h1>
+            <p className="text-[10px] text-zinc-500 hidden sm:block tracking-[0.2em] uppercase">Operations Dashboard</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-3">
           {can('create') && (
             <Link
               to="/add-task"
-              className="text-white text-xs sm:text-sm font-medium px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl transition"
-              style={{ backgroundColor: '#6b2444' }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = '#4a0000'}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = '#6b2444'}
+              className="bg-orange-500 hover:bg-orange-400 text-zinc-950 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-2 rounded-sm transition tracking-wider uppercase shadow-[0_8px_24px_-8px_rgba(255,122,26,0.5)]"
             >
-              <span className="sm:hidden">+</span>
-              <span className="hidden sm:inline">+ เพิ่มงาน</span>
+              <span className="sm:hidden">+ Add</span>
+              <span className="hidden sm:inline">+ New Task</span>
             </Link>
           )}
 
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <div className={`w-7 h-7 sm:w-8 sm:h-8 ${roleColor[user.role]} rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-bold shrink-0`}>
+          <div className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-zinc-800">
+            <div className={`w-8 h-8 ${roleColor[user.role]} rounded-sm flex items-center justify-center text-zinc-950 text-xs font-bold shrink-0`}>
               {user.fullname?.charAt(0)}
             </div>
             <div className="hidden md:block">
-              <p className="text-sm font-medium text-slate-700">{user.fullname}</p>
-              <p className="text-xs text-slate-400 capitalize">{user.role}</p>
+              <p className="text-xs font-medium text-zinc-200 leading-tight">{user.fullname}</p>
+              <p className="text-[10px] text-zinc-500 uppercase tracking-wider">{user.role}</p>
             </div>
           </div>
-          <button onClick={logout} className="text-xs sm:text-sm text-slate-400 hover:text-red-500 transition whitespace-nowrap">
-            <span className="hidden sm:inline">ออกจากระบบ</span>
-            <span className="sm:hidden">ออก</span>
+          <button onClick={logout} className="text-xs text-zinc-500 hover:text-red-400 transition whitespace-nowrap px-2 py-1">
+            <span className="hidden sm:inline">⏻ Logout</span>
+            <span className="sm:hidden">⏻</span>
           </button>
         </div>
       </nav>
 
-      <div className="max-w-5xl mx-auto px-3 sm:px-4 py-5 sm:py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+
+        {/* Header strip */}
+        <div className="flex items-end justify-between mb-6 sm:mb-8">
+          <div>
+            <p className="text-[10px] sm:text-xs text-zinc-500 tracking-[0.25em] uppercase mb-1">Overview</p>
+            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">
+              Hi, <span className="text-orange-500">{user.fullname?.split(' ')[0]}</span>
+            </h2>
+          </div>
+          <div className="hidden sm:block text-right text-xs text-zinc-500 font-mono">
+            {now.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          </div>
+        </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-zinc-800 border border-zinc-800 rounded-sm overflow-hidden mb-8">
           {[
-            { label: 'งานเสร็จสัปดาห์นี้', value: completedThisWeek, color: 'text-blue-600',  icon: '✅' },
-            { label: 'กำลังดำเนินการ',      value: ongoing,           color: 'text-amber-600', icon: '⏳' },
-            { label: 'งานทั้งเดือน',        value: thisMonth,         color: 'text-slate-700', icon: '📋' },
-            { label: 'อัตราสำเร็จ',         value: `${successRate}%`, color: 'text-green-600', icon: '📈' },
+            { label: 'Completed This Week', value: completedThisWeek, accent: 'text-emerald-400',  hint: 'COMPLETED · WK' },
+            { label: 'In Progress',      value: ongoing,           accent: 'text-orange-400',   hint: 'IN PROGRESS' },
+            { label: 'Tasks This Month',        value: thisMonth,         accent: 'text-zinc-100',     hint: 'MTD TASKS' },
+            { label: 'Success Rate',         value: `${successRate}%`, accent: 'text-sky-400',      hint: 'SUCCESS RATE' },
           ].map((stat, i) => (
-            <div key={i} className="bg-white rounded-xl sm:rounded-2xl p-3.5 sm:p-5 shadow-sm border border-slate-100">
-              <div className="text-lg sm:text-xl mb-0.5 sm:mb-1">{stat.icon}</div>
-              <div className={`text-xl sm:text-2xl font-bold ${stat.color}`}>{stat.value}</div>
-              <div className="text-xs text-slate-400 mt-0.5 sm:mt-1 leading-tight">{stat.label}</div>
+            <div key={i} className="bg-zinc-900 p-4 sm:p-5 relative group hover:bg-zinc-900/60 transition">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[9px] font-mono text-zinc-600 tracking-widest">{stat.hint}</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-700 group-hover:bg-orange-500 transition" />
+              </div>
+              <div className={`text-2xl sm:text-4xl font-semibold ${stat.accent} tabular-nums tracking-tight`}>{stat.value}</div>
+              <div className="text-xs text-zinc-500 mt-1 leading-tight">{stat.label}</div>
             </div>
           ))}
         </div>
 
         {/* Filter */}
-        <div className="flex gap-2 mb-4 sm:mb-5 flex-wrap">
+        <div className="flex items-center gap-2 mb-5 flex-wrap">
+          <span className="text-[10px] tracking-[0.2em] uppercase text-zinc-500 mr-2 hidden sm:inline">Filter</span>
           {[
-            { key: 'Hydraulic',   label: '💧 Hydraulic' },
-            { key: 'Mechatronic', label: '⚡ Mechatronic' },
-            { key: 'Mechanic',    label: '⚙️ Mechanic' },
+            { key: 'all',         label: 'All' },
+            { key: 'Hydraulic',   label: 'Hydraulic' },
+            { key: 'Mechatronic', label: 'Mechatronic' },
+            { key: 'Mechanic',    label: 'Mechanic' },
           ].map(f => (
             <button
               key={f.key}
               onClick={() => setFilter(f.key)}
-              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition ${
+              className={`px-3 sm:px-4 py-1.5 rounded-sm text-xs font-medium tracking-wider uppercase transition border ${
                 filter === f.key
-                  ? 'bg-blue-500 text-white shadow'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:border-blue-300'
+                  ? 'bg-orange-500 text-zinc-950 border-orange-500 shadow-[0_0_20px_-6px_rgba(255,122,26,0.7)]'
+                  : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-zinc-200'
               }`}
             >
               {f.label}
@@ -182,62 +204,65 @@ export default function DashboardPage() {
 
         {/* Task List */}
         {loading ? (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {[1, 2, 3].map(i => (
-              <div key={i} className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-100 animate-pulse">
+              <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-sm p-5 animate-pulse">
                 <div className="flex items-center gap-4">
-                  <div className="w-3 h-3 rounded-full bg-slate-200 shrink-0" />
+                  <div className="w-2 h-2 rounded-full bg-zinc-800 shrink-0" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-slate-200 rounded w-1/3" />
-                    <div className="h-3 bg-slate-100 rounded w-1/4" />
+                    <div className="h-4 bg-zinc-800 rounded w-1/3" />
+                    <div className="h-3 bg-zinc-800/70 rounded w-1/4" />
                   </div>
                 </div>
               </div>
             ))}
           </div>
         ) : error ? (
-          <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
-            ⚠️ โหลดข้อมูลไม่สำเร็จ: {error}
+          <div className="bg-red-950/40 border border-red-900/60 text-red-300 rounded-sm px-4 py-3 text-sm">
+            ⚠ Failed to load data: {error}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-12 sm:py-16 text-slate-400">
-            <div className="text-3xl sm:text-4xl mb-3">📭</div>
-            <p className="text-sm sm:text-base">ยังไม่มีงานในแผนกนี้</p>
+          <div className="border border-dashed border-zinc-800 rounded-sm text-center py-16 text-zinc-500">
+            <div className="text-3xl mb-3 opacity-40">∅</div>
+            <p className="text-sm tracking-wider uppercase">No tasks in this department</p>
           </div>
         ) : (
-          <div className="space-y-2 sm:space-y-3">
-            {filtered.map(task => {
-              const sec  = sectionColor[task.section]   || { bg: 'bg-slate-100', text: 'text-slate-600', label: task.section }
-              const pri  = priorityColor[task.priority] || { bg: 'bg-slate-100', text: 'text-slate-600', label: task.priority }
+          <div className="border border-zinc-800 rounded-sm overflow-hidden divide-y divide-zinc-800">
+            {filtered.map((task, idx) => {
+              const sec  = sectionColor[task.section]   || { bg: 'bg-zinc-800', text: 'text-zinc-400', ring: 'ring-zinc-700', label: task.section }
+              const pri  = priorityColor[task.priority] || { bg: 'bg-zinc-800', text: 'text-zinc-400', label: task.priority }
               const done = task.status === 'done'
               return (
                 <Link
                   to={`/tasks/${task.id}`}
                   key={task.id}
-                  className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-100 flex items-start sm:items-center gap-3 sm:gap-4 hover:shadow-md hover:border-blue-200 transition"
+                  className="bg-zinc-900 hover:bg-zinc-900/40 transition flex items-start sm:items-center gap-3 sm:gap-5 p-4 sm:p-5 group"
                 >
-                  <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full shrink-0 mt-1.5 sm:mt-0 ${done ? 'bg-green-400' : 'bg-amber-400'}`} />
+                  <span className="text-[10px] font-mono text-zinc-600 w-6 tabular-nums shrink-0 hidden sm:inline">
+                    {String(idx + 1).padStart(2, '0')}
+                  </span>
+                  <div className={`w-2 h-10 rounded-sm shrink-0 ${done ? 'bg-emerald-500' : 'bg-orange-500'}`} />
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-slate-800 truncate text-sm sm:text-base">{task.title}</h3>
-                    <div className="flex items-center gap-1.5 sm:gap-2 mt-1 flex-wrap">
-                      <span className="text-xs text-slate-400">👤 {task.assigned_to}</span>
-                      <span className="text-xs text-slate-300 hidden sm:inline">·</span>
-                      <span className="text-xs text-slate-400 hidden sm:inline">📅 {formatDate(task.created_at)}</span>
+                    <h3 className="font-medium text-zinc-100 truncate text-sm sm:text-base group-hover:text-orange-400 transition">
+                      {task.title}
+                    </h3>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap text-[11px] text-zinc-500 font-mono">
+                      <span>▸ {task.assigned_to}</span>
+                      <span className="text-zinc-700">·</span>
+                      <span>{formatDate(task.created_at)}</span>
                       {task.photos > 0 && (
                         <>
-                          <span className="text-xs text-slate-300">·</span>
-                          <span className="text-xs text-slate-400">🖼️ {task.photos}</span>
+                          <span className="text-zinc-700">·</span>
+                          <span>◫ {task.photos}</span>
                         </>
                       )}
                     </div>
-                    {/* Date shown below on mobile */}
-                    <div className="text-xs text-slate-400 mt-0.5 sm:hidden">📅 {formatDate(task.created_at)}</div>
                   </div>
                   <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1.5 sm:gap-2 shrink-0">
-                    <span className={`text-xs font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full ${sec.bg} ${sec.text}`}>{sec.label}</span>
-                    <span className={`text-xs font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full ${pri.bg} ${pri.text} hidden sm:inline`}>{pri.label}</span>
-                    <span className={`text-xs font-semibold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full ${done ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                      {done ? '✅ เสร็จ' : '⏳ ทำอยู่'}
+                    <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-sm ring-1 ${sec.bg} ${sec.text} ${sec.ring}`}>{sec.label}</span>
+                    <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-sm ${pri.bg} ${pri.text} hidden md:inline`}>{pri.label}</span>
+                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-sm ${done ? 'bg-emerald-500/15 text-emerald-400' : 'bg-orange-500/15 text-orange-400'}`}>
+                      {done ? '● DONE' : '○ ACTIVE'}
                     </span>
                   </div>
                 </Link>
