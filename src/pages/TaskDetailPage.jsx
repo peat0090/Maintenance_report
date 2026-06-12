@@ -346,13 +346,13 @@ export default function TaskDetailPage() {
                   <label className="block text-[11px] font-medium text-zinc-500 mb-2 tracking-wider uppercase">Start Date</label>
                   <input type="datetime-local" value={form.start_date}
                     onChange={e => setForm(p => ({ ...p, start_date: e.target.value }))}
-                    className={inputCls + " [color-scheme:dark]"}/>
+                    className={inputCls + " scheme-dark"}/>
                 </div>
                 <div>
                   <label className="block text-[11px] font-medium text-zinc-500 mb-2 tracking-wider uppercase">End Date</label>
                   <input type="datetime-local" value={form.end_date}
                     onChange={e => setForm(p => ({ ...p, end_date: e.target.value }))}
-                    className={inputCls + " [color-scheme:dark]"}/>
+                    className={inputCls + " scheme-dark"}/>
                 </div>
               </div>
             </div>

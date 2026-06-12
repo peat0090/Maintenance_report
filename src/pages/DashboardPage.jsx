@@ -103,7 +103,7 @@ export default function DashboardPage() {
     : 0
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-['Prompt',sans-serif]">
+      <div className="min-h-screen bg-zinc-950 text-zinc-100 font-['Prompt',sans-serif]">
 
       {/* Navbar */}
       <nav className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur border-b border-zinc-800 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
@@ -119,6 +119,14 @@ export default function DashboardPage() {
           </div>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
+          <Link
+            to="/borrow"
+            className="bg-zinc-900 hover:border-orange-500 hover:text-orange-400 text-zinc-300 border border-zinc-800 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-2 rounded-sm transition tracking-wider uppercase"
+          >
+            <span className="sm:hidden">⇄</span>
+            <span className="hidden sm:inline">⇄ Borrow</span>
+          </Link>
+
           {can('create') && (
             <Link
               to="/add-task"
@@ -156,9 +164,11 @@ export default function DashboardPage() {
             </h2>
           </div>
           <div className="hidden sm:block text-right text-xs text-zinc-500 font-mono">
-            {now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          <div className="hidden sm:block text-right text-xs  text-zinc-500 font-mono">
+     {now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </div>
         </div>
+      </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-zinc-800 border border-zinc-800 rounded-sm overflow-hidden mb-8">
