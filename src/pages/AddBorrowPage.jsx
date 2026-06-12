@@ -107,7 +107,7 @@ export default function AddBorrowPage() {
                     Item Name <span className="text-orange-500">*</span>
                   </label>
                   <input type="text" name="item_name" value={form.item_name} onChange={handleChange} required
-                    placeholder="ชื่ออุปกรณ์ / เครื่องมือ ที่ต้องการยืม"
+                    placeholder="Name of the item being borrowed"
                     className={inputCls}
                   />
                 </div>
@@ -127,7 +127,7 @@ export default function AddBorrowPage() {
                     Borrower <span className="text-orange-500">*</span>
                   </label>
                   <input type="text" name="borrower" value={form.borrower} onChange={handleChange} required
-                    placeholder="ชื่อผู้ยืม"
+                    placeholder="Borrower's Name"
                     className={inputCls}
                   />
                 </div>
@@ -147,7 +147,7 @@ export default function AddBorrowPage() {
               <div>
                 <label className="block text-[11px] font-medium text-zinc-500 mb-2 tracking-wider uppercase">Purpose / Note</label>
                 <textarea name="purpose" value={form.purpose} onChange={handleChange} rows={3}
-                  placeholder="วัตถุประสงค์ในการยืม"
+                  placeholder="Purpose / Note"
                   className={inputCls + " resize-none"}
                 />
               </div>
