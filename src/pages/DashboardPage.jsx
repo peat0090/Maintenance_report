@@ -156,7 +156,7 @@ export default function DashboardPage() {
             </h2>
           </div>
           <div className="hidden sm:block text-right text-xs text-zinc-500 font-mono">
-            {now.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            {now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </div>
         </div>
 
