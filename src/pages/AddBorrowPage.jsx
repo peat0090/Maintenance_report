@@ -18,6 +18,7 @@ export default function AddBorrowPage() {
     due_date:  '',
   })
 
+  const [photos, setPhotos]         = useState([])
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted]   = useState(false)
   const [error, setError]           = useState(null)
@@ -27,12 +28,31 @@ export default function AddBorrowPage() {
     setForm(prev => ({ ...prev, [name]: name === 'quantity' ? Number(value) : value }))
   }
 
+  const handlePhotos = (e) => {
+    const files = Array.from(e.target.files)
+    setPhotos(prev => [...prev, ...files.map(file => ({
+      file, url: URL.createObjectURL(file), name: file.name,
+    }))])
+    e.target.value = ''
+  }
+
+  const removePhoto = (index) => setPhotos(prev => prev.filter((_, i) => i !== index))
+
+  const uploadPhoto = async (photo, borrowId) => {
+    const ext = photo.file.name.split('.').pop()
+    const fileName = `${borrowId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`
+    const { error } = await supabase.storage.from('borrow-photos').upload(fileName, photo.file, { cacheControl: '3600', upsert: false })
+    if (error) throw error
+    const { data: urlData } = supabase.storage.from('borrow-photos').getPublicUrl(fileName)
+    return urlData.publicUrl
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSubmitting(true)
     setError(null)
     try {
-      const { error: insertError } = await supabase
+      const { data: borrow, error: insertError } = await supabase
         .from('borrowed_items')
         .insert([{
           item_name:   form.item_name,
@@ -44,8 +64,19 @@ export default function AddBorrowPage() {
           borrow_date: new Date().toISOString(),
           status:      'borrowed',
           created_by:  user.id,
-        }])
+        }]).select().single()
       if (insertError) throw insertError
+
+      if (photos.length > 0) {
+        const uploaded = await Promise.all(
+          photos.map(async (photo) => ({
+            borrow_id: borrow.id, photo_url: await uploadPhoto(photo, borrow.id),
+          }))
+        )
+        const { error: photoError } = await supabase.from('borrow_photos').insert(uploaded)
+        if (photoError) throw photoError
+      }
+
       setSubmitted(true)
       setTimeout(() => navigate('/borrow'), 1500)
     } catch (err) {
@@ -149,6 +180,50 @@ export default function AddBorrowPage() {
                 <input type="datetime-local" name="due_date" value={form.due_date} onChange={handleChange} className={inputCls + " scheme-dark"} />
               </div>
 
+            </div>
+          </div>
+
+          {/* Section 2: Photos */}
+          <div className="bg-zinc-900 rounded-sm border border-zinc-800 overflow-hidden">
+            <div className="flex items-center justify-between px-5 sm:px-6 py-3 border-b border-zinc-800 bg-zinc-900/60">
+              <h2 className="font-medium flex items-center gap-3 text-sm">
+                <span className="w-6 h-6 bg-orange-500 text-zinc-950 rounded-sm flex items-center justify-center text-xs font-bold">2</span>
+                <span className="tracking-wider uppercase text-zinc-300">{t('section_photos')}</span>
+              </h2>
+              <span className="text-[10px] font-mono text-zinc-600">// MEDIA</span>
+            </div>
+            <div className="p-5 sm:p-6">
+
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <label className="flex flex-col items-center justify-center gap-2 border border-dashed border-zinc-700 hover:border-orange-500 rounded-sm py-6 text-center cursor-pointer hover:bg-orange-500/5 transition group">
+                  <input type="file" accept="image/*" capture="environment" onChange={handlePhotos} className="hidden" />
+                  <div className="text-2xl text-zinc-600 group-hover:text-orange-500 group-hover:scale-110 transition">📷</div>
+                  <p className="text-zinc-300 text-xs tracking-wider uppercase">{t('take_photo')}</p>
+                </label>
+                <label className="flex flex-col items-center justify-center gap-2 border border-dashed border-zinc-700 hover:border-orange-500 rounded-sm py-6 text-center cursor-pointer hover:bg-orange-500/5 transition group">
+                  <input type="file" multiple accept="image/*" onChange={handlePhotos} className="hidden" />
+                  <div className="text-2xl text-zinc-600 group-hover:text-orange-500 group-hover:scale-110 transition">◫</div>
+                  <p className="text-zinc-300 text-xs tracking-wider uppercase">{t('choose_from_gallery')}</p>
+                </label>
+              </div>
+              <p className="text-zinc-600 text-[11px] font-mono mb-1">JPG · PNG · WEBP — MAX 10MB</p>
+
+              {photos.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-[11px] tracking-wider uppercase text-zinc-500 mb-3">{t('selected_images')} ({photos.length})</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+                    {photos.map((photo, i) => (
+                      <div key={i} className="relative group rounded-sm overflow-hidden aspect-square bg-zinc-950 border border-zinc-800">
+                        <img src={photo.url} alt={photo.name} className="w-full h-full object-cover" />
+                        <button type="button" onClick={() => removePhoto(i)}
+                          className="absolute top-1.5 right-1.5 w-6 h-6 bg-red-500 text-white rounded-sm text-xs opacity-0 group-hover:opacity-100 transition flex items-center justify-center"
+                        >✕</button>
+                        <div className="absolute bottom-0 left-0 right-0 bg-zinc-950/80 backdrop-blur text-zinc-300 text-[10px] font-mono p-1 truncate">{photo.name}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
