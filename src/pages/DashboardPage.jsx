@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabaseClient'
+import { useTranslation } from 'react-i18next'
 
 const sectionColor = {
   Hydraulic:   { bg: 'bg-sky-500/10',     text: 'text-sky-400',     ring: 'ring-sky-500/30',     label: 'Hydraulic' },
@@ -38,10 +39,17 @@ const formatDate = (dateStr) => {
 export default function DashboardPage() {
   const [filter, setFilter] = useState('all')
   const { user, logout, can } = useAuth()
+  const { t, i18n } = useTranslation()
 
   const [tasks, setTasks]     = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState(null)
+
+  const toggleLang = () => {
+    const next = i18n.language === 'th' ? 'en' : 'th'
+    i18n.changeLanguage(next)
+    localStorage.setItem('lang', next)
+  }
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -103,7 +111,7 @@ export default function DashboardPage() {
     : 0
 
   return (
-      <div className="min-h-screen bg-zinc-950 text-zinc-100 font-['Prompt',sans-serif]">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-['Prompt',sans-serif]">
 
       {/* Navbar */}
       <nav className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur border-b border-zinc-800 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
@@ -119,12 +127,21 @@ export default function DashboardPage() {
           </div>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
+
+          {/* ปุ่มสลับภาษา */}
+          <button
+            onClick={toggleLang}
+            className="text-[10px] font-mono font-bold tracking-widest px-2.5 py-1.5 rounded-sm border border-zinc-700 text-zinc-400 hover:border-orange-500 hover:text-orange-400 transition uppercase"
+          >
+            {i18n.language === 'th' ? 'EN' : 'ไทย'}
+          </button>
+
           <Link
             to="/borrow"
             className="bg-zinc-900 hover:border-orange-500 hover:text-orange-400 text-zinc-300 border border-zinc-800 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-2 rounded-sm transition tracking-wider uppercase"
           >
             <span className="sm:hidden">⇄</span>
-            <span className="hidden sm:inline">⇄ Borrow</span>
+            <span className="hidden sm:inline">⇄ {t('nav_borrow')}</span>
           </Link>
 
           {can('create') && (
@@ -132,8 +149,8 @@ export default function DashboardPage() {
               to="/add-task"
               className="bg-orange-500 hover:bg-orange-400 text-zinc-950 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-2 rounded-sm transition tracking-wider uppercase shadow-[0_8px_24px_-8px_rgba(255,122,26,0.5)]"
             >
-              <span className="sm:hidden">+ Add</span>
-              <span className="hidden sm:inline">+ New Task</span>
+              <span className="sm:hidden">+ {t('nav_add')}</span>
+              <span className="hidden sm:inline">{t('nav_new_task')}</span>
             </Link>
           )}
 
@@ -147,7 +164,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <button onClick={logout} className="text-xs text-zinc-500 hover:text-red-400 transition whitespace-nowrap px-2 py-1">
-            <span className="hidden sm:inline">⏻ Logout</span>
+            <span className="hidden sm:inline">⏻ {t('nav_logout')}</span>
             <span className="sm:hidden">⏻</span>
           </button>
         </div>
@@ -158,25 +175,25 @@ export default function DashboardPage() {
         {/* Header strip */}
         <div className="flex items-end justify-between mb-6 sm:mb-8">
           <div>
-            <p className="text-[10px] sm:text-xs text-zinc-500 tracking-[0.25em] uppercase mb-1">Overview</p>
+            <p className="text-[10px] sm:text-xs text-zinc-500 tracking-[0.25em] uppercase mb-1">{t('overview')}</p>
             <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-              Hi, <span className="text-orange-500">{user.fullname?.split(' ')[0]}</span>
+              {t('hi')} <span className="text-orange-500">{user.fullname?.split(' ')[0]}</span>
             </h2>
           </div>
           <div className="hidden sm:block text-right text-xs text-zinc-500 font-mono">
-          <div className="hidden sm:block text-right text-xs  text-zinc-500 font-mono">
-     {now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            {now.toLocaleDateString(i18n.language === 'th' ? 'th-TH' : 'en-GB', {
+              weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+            })}
           </div>
         </div>
-      </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-zinc-800 border border-zinc-800 rounded-sm overflow-hidden mb-8">
           {[
-            { label: 'Completed This Week', value: completedThisWeek, accent: 'text-emerald-400',  hint: 'COMPLETED · WK' },
-            { label: 'In Progress',      value: ongoing,           accent: 'text-orange-400',   hint: 'IN PROGRESS' },
-            { label: 'Tasks This Month',        value: thisMonth,         accent: 'text-zinc-100',     hint: 'MTD TASKS' },
-            { label: 'Success Rate',         value: `${successRate}%`, accent: 'text-sky-400',      hint: 'SUCCESS RATE' },
+            { label: t('stat_completed_week'), value: completedThisWeek, accent: 'text-emerald-400', hint: 'COMPLETED · WK' },
+            { label: t('stat_in_progress'),    value: ongoing,           accent: 'text-orange-400',  hint: 'IN PROGRESS' },
+            { label: t('stat_tasks_month'),    value: thisMonth,         accent: 'text-zinc-100',    hint: 'MTD TASKS' },
+            { label: t('stat_success_rate'),   value: `${successRate}%`, accent: 'text-sky-400',     hint: 'SUCCESS RATE' },
           ].map((stat, i) => (
             <div key={i} className="bg-zinc-900 p-4 sm:p-5 relative group hover:bg-zinc-900/60 transition">
               <div className="flex items-center justify-between mb-2">
@@ -191,9 +208,9 @@ export default function DashboardPage() {
 
         {/* Filter */}
         <div className="flex items-center gap-2 mb-5 flex-wrap">
-          <span className="text-[10px] tracking-[0.2em] uppercase text-zinc-500 mr-2 hidden sm:inline">Filter</span>
+          <span className="text-[10px] tracking-[0.2em] uppercase text-zinc-500 mr-2 hidden sm:inline">{t('filter')}</span>
           {[
-            { key: 'all',         label: 'All' },
+            { key: 'all',         label: t('filter_all') },
             { key: 'Hydraulic',   label: 'Hydraulic' },
             { key: 'Mechatronic', label: 'Mechatronic' },
             { key: 'Mechanic',    label: 'Mechanic' },
@@ -229,12 +246,12 @@ export default function DashboardPage() {
           </div>
         ) : error ? (
           <div className="bg-red-950/40 border border-red-900/60 text-red-300 rounded-sm px-4 py-3 text-sm">
-            ⚠ Failed to load data: {error}
+            ⚠ {t('load_error')}: {error}
           </div>
         ) : filtered.length === 0 ? (
           <div className="border border-dashed border-zinc-800 rounded-sm text-center py-16 text-zinc-500">
             <div className="text-3xl mb-3 opacity-40">∅</div>
-            <p className="text-sm tracking-wider uppercase">No tasks in this department</p>
+            <p className="text-sm tracking-wider uppercase">{t('no_tasks')}</p>
           </div>
         ) : (
           <div className="border border-zinc-800 rounded-sm overflow-hidden divide-y divide-zinc-800">
@@ -272,7 +289,7 @@ export default function DashboardPage() {
                     <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-sm ring-1 ${sec.bg} ${sec.text} ${sec.ring}`}>{sec.label}</span>
                     <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-sm ${pri.bg} ${pri.text} hidden md:inline`}>{pri.label}</span>
                     <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-sm ${done ? 'bg-emerald-500/15 text-emerald-400' : 'bg-orange-500/15 text-orange-400'}`}>
-                      {done ? '● DONE' : '○ ACTIVE'}
+                      {done ? t('status_done') : t('status_active')}
                     </span>
                   </div>
                 </Link>
