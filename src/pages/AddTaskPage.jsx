@@ -87,6 +87,11 @@ export default function AddTaskPage() {
         if (photoError) throw photoError
       }
 
+      // ส่งแจ้งเตือนเข้า Telegram (ไม่บล็อกการบันทึก ถ้าแจ้งเตือนพลาดก็ไม่ทำให้บันทึก task ล้มเหลว)
+      supabase.functions.invoke('notify-new-task', {
+        body: { task_id: task.id, event: 'created' },
+      }).catch(err => console.warn('Telegram notify failed:', err))
+
       setSubmitted(true)
       setTimeout(() => navigate('/'), 2000)
     } catch (err) {

@@ -110,6 +110,8 @@ export default function TaskDetailPage() {
     if (!canEditTask(user, task)) { setError('You do not have permission to edit this task'); return }
     setSaving(true)
     setError(null)
+    const previousAssignee = task.assigned_to
+    const assigneeChanged  = previousAssignee !== form.assigned_to
     try {
       const { error: updateErr } = await supabase.from('tasks').update({
         title: form.title, description: form.description || null,
@@ -118,6 +120,12 @@ export default function TaskDetailPage() {
         start_date: form.start_date || null, end_date: form.end_date || null,
       }).eq('id', id)
       if (updateErr) throw updateErr
+
+      if (assigneeChanged) {
+        supabase.functions.invoke('notify-new-task', {
+          body: { task_id: id, event: 'reassigned', previous_assignee: previousAssignee },
+        }).catch(err => console.warn('Telegram notify failed:', err))
+      }
 
       if (newPhotos.length > 0) {
         const uploaded = await Promise.all(newPhotos.map(async (photo) => {
